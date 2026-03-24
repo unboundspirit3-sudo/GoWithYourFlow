@@ -1,9 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-/* ── Anthropic API key ─────────────────────────────────────────
-   Set VITE_ANTHROPIC_API_KEY in your Vercel environment variables.
-   In dev, create a .env file:  VITE_ANTHROPIC_API_KEY=sk-ant-...
-──────────────────────────────────────────────────────────────── */
 /* ═══════════════════════════════════════════════════════════════
    SUPPORTED LANGUAGES — 30 languages with native names & RTL flag
 ═══════════════════════════════════════════════════════════════ */
@@ -281,6 +277,41 @@ const BASE_STRINGS = {
   languageLabel: "Language",
   translatingLabel: "Translating…",
   translateError: "Translation unavailable — showing English",
+
+  // Trial / payment flow
+  trialSignupTitle: "Start Your Free Trial",
+  trialSignupSubtitle: "7 days of full access. No card required. No commitment.",
+  trialIncludedLabel: "What's included",
+  trialIncludedItems: [
+    "✦ Full access to all 4 cycle phases",
+    "✦ 40+ smoothie, shake & juice recipes",
+    "✦ Phase-specific workouts & meal plans",
+    "✦ PCOS, Endometriosis & BP guides",
+    "✦ Habit tracker & journal",
+    "✦ Available in 30 languages",
+  ],
+  trialStartBtn: "Start My Free 7-Day Trial →",
+  trialFooter: "No credit card required · Cancel anytime · Full access immediately",
+  trialFormError: "Please enter your name and a valid email.",
+  trialStartedTitle: "Your 7-Day Trial Has Started!",
+  trialStartedBody: "Welcome, {name}! You have full access to the entire hub for the next 7 days — completely free.",
+  trialEndsIn: "Trial ends in",
+  trialNoCard: "No card needed today. After 7 days, choose a plan to keep your access.",
+  trialEnterBtn: "Enter the Hub — Start Exploring →",
+  trialExpiredTitle: "Your Free Trial Has Ended",
+  trialExpiredBody: "We hope you loved your 7 days inside the hub. Choose a plan below to keep your full access and continue your cycle-syncing journey.",
+  trialExpiredBanner: "Your 7-day trial has ended. Choose a plan to keep access.",
+  trialBannerLabel: "Free Trial",
+  trialBannerRemaining: "remaining",
+  trialUpgradeBtn: "Upgrade Now",
+  trialHeroTitle: "Try it FREE for 7 days",
+  trialHeroDesc: "No credit card. No commitment. Full access to the entire hub from day one.",
+  trialHeroBtn: "Start Free Trial — No Card Needed",
+  orChoosePlan: "— or choose a paid plan below —",
+  stripeRedirectMsg: "You will be redirected to Stripe's secure payment page to complete your purchase.",
+
+  // Journal days
+  journalDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -604,6 +635,29 @@ const TRANSLATIONS = {
     bioTitle: "Votre Lien Bio", bioCopyBtn: "Copier", bioCopiedBtn: "✓ Copié !",
     successTitle: "Vous êtes Dedans, Belle !", successBody: "Bienvenue dans Go With Your Flow. Commençons votre voyage de 8 semaines.",
     successBtn: "Entrer dans le Hub →",
+    trialSignupTitle: "Commencez Votre Essai Gratuit",
+    trialSignupSubtitle: "7 jours d'accès complet. Sans carte bancaire. Sans engagement.",
+    trialIncludedLabel: "Ce qui est inclus",
+    trialIncludedItems: ["✦ Accès complet aux 4 phases du cycle", "✦ 40+ recettes de smoothies, shakes et jus", "✦ Entraînements et repas par phase", "✦ Guides SOPK, Endométriose et HTA", "✦ Suivi des habitudes et journal", "✦ Disponible en 30 langues"],
+    trialStartBtn: "Commencer mon essai gratuit de 7 jours →",
+    trialFooter: "Aucune carte bancaire requise · Annulez à tout moment · Accès immédiat",
+    trialFormError: "Veuillez entrer votre nom et un email valide.",
+    trialStartedTitle: "Votre Essai de 7 Jours a Commencé !",
+    trialStartedBody: "Bienvenue, {name} ! Vous avez un accès complet au hub pendant 7 jours — entièrement gratuit.",
+    trialEndsIn: "L'essai se termine dans",
+    trialNoCard: "Aucune carte nécessaire aujourd'hui. Après 7 jours, choisissez un plan pour garder votre accès.",
+    trialEnterBtn: "Entrer dans le Hub — Commencer →",
+    trialExpiredTitle: "Votre Essai Gratuit est Terminé",
+    trialExpiredBody: "Nous espérons que vous avez apprécié vos 7 jours. Choisissez un plan ci-dessous pour garder votre accès complet.",
+    trialExpiredBanner: "Votre essai de 7 jours est terminé. Choisissez un plan pour garder l'accès.",
+    trialBannerLabel: "Essai Gratuit", trialBannerRemaining: "restant",
+    trialUpgradeBtn: "Passer au Plan Payant",
+    trialHeroTitle: "Essayez GRATUITEMENT pendant 7 jours",
+    trialHeroDesc: "Sans carte bancaire. Sans engagement. Accès complet dès le premier jour.",
+    trialHeroBtn: "Commencer l'Essai Gratuit",
+    orChoosePlan: "— ou choisissez un plan payant ci-dessous —",
+    stripeRedirectMsg: "Vous serez redirigée vers la page de paiement sécurisée Stripe.",
+    journalDays: ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
   },
 
   es: {
@@ -671,6 +725,29 @@ const TRANSLATIONS = {
     bioTitle: "Tu Enlace Bio", bioCopyBtn: "Copiar", bioCopiedBtn: "✓ ¡Copiado!",
     successTitle: "¡Ya Estás Dentro, Hermosa!", successBody: "Bienvenida a Go With Your Flow. Comencemos tu viaje de 8 semanas.",
     successBtn: "Entrar al Hub →",
+    trialSignupTitle: "Comienza Tu Prueba Gratuita",
+    trialSignupSubtitle: "7 días de acceso completo. Sin tarjeta. Sin compromiso.",
+    trialIncludedLabel: "Qué incluye",
+    trialIncludedItems: ["✦ Acceso completo a las 4 fases del ciclo", "✦ 40+ recetas de batidos, shakes y jugos", "✦ Entrenamientos y comidas por fase", "✦ Guías de SOP, Endometriosis e HTA", "✦ Seguimiento de hábitos y diario", "✦ Disponible en 30 idiomas"],
+    trialStartBtn: "Comenzar mi prueba gratuita de 7 días →",
+    trialFooter: "Sin tarjeta de crédito · Cancela cuando quieras · Acceso inmediato",
+    trialFormError: "Por favor ingresa tu nombre y un email válido.",
+    trialStartedTitle: "¡Tu Prueba de 7 Días Ha Comenzado!",
+    trialStartedBody: "¡Bienvenida, {name}! Tienes acceso completo al hub durante 7 días — totalmente gratis.",
+    trialEndsIn: "La prueba termina en",
+    trialNoCard: "No necesitas tarjeta hoy. Después de 7 días, elige un plan para mantener tu acceso.",
+    trialEnterBtn: "Entrar al Hub — Comenzar →",
+    trialExpiredTitle: "Tu Prueba Gratuita Ha Terminado",
+    trialExpiredBody: "Esperamos que hayas disfrutado tus 7 días. Elige un plan abajo para mantener tu acceso completo.",
+    trialExpiredBanner: "Tu prueba de 7 días ha terminado. Elige un plan para mantener el acceso.",
+    trialBannerLabel: "Prueba Gratuita", trialBannerRemaining: "restante",
+    trialUpgradeBtn: "Actualizar Plan",
+    trialHeroTitle: "Prueba GRATIS durante 7 días",
+    trialHeroDesc: "Sin tarjeta. Sin compromiso. Acceso completo desde el primer día.",
+    trialHeroBtn: "Comenzar Prueba Gratuita",
+    orChoosePlan: "— o elige un plan de pago abajo —",
+    stripeRedirectMsg: "Serás redirigida a la página de pago seguro de Stripe.",
+    journalDays: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
   },
 
   pt: {
@@ -1118,18 +1195,12 @@ function RecipeGrid({ items, accent }) {
 const TRIAL_DAYS = 7;
 const MS_PER_DAY = 86400000;
 
-/* Safe storage — falls back to in-memory when localStorage is unavailable
-   (e.g. in sandboxed iframes like the Claude artifact runner) */
-const _mem = {};
-function _get(k)    { try { return localStorage.getItem(k); }    catch { return _mem[k] ?? null; } }
-function _set(k, v) { try { localStorage.setItem(k, v); }        catch { _mem[k] = v; } }
-
 function getTrialState() {
   try {
-    const paid = _get("gwtf_paid") === "true";
+    const paid = localStorage.getItem("gwtf_paid") === "true";
     if (paid) return { status: "paid" };
-    const start = _get("gwtf_trial_start");
-    const email = _get("gwtf_trial_email");
+    const start = localStorage.getItem("gwtf_trial_start");
+    const email = localStorage.getItem("gwtf_trial_email");
     if (!start) return { status: "none" };
     const elapsed = Date.now() - new Date(start).getTime();
     const msLeft  = TRIAL_DAYS * MS_PER_DAY - elapsed;
@@ -1139,12 +1210,14 @@ function getTrialState() {
 }
 
 function startTrial(email) {
-  _set("gwtf_trial_start", new Date().toISOString());
-  _set("gwtf_trial_email", email);
+  try {
+    localStorage.setItem("gwtf_trial_start", new Date().toISOString());
+    localStorage.setItem("gwtf_trial_email", email);
+  } catch {}
 }
 
 function markPaid() {
-  _set("gwtf_paid", "true");
+  try { localStorage.setItem("gwtf_paid", "true"); } catch {}
 }
 
 /* Formats ms → "6d 23h 14m" */
@@ -1162,8 +1235,6 @@ function PaymentGate({ onUnlock, s, lang }) {
   const [plan, setPlan]               = useState(null);
   const [trialEmail, setTrialEmail]   = useState("");
   const [trialName, setTrialName]     = useState("");
-  const [form, setForm]               = useState({ name: "", email: "", card: "", expiry: "", cvv: "" });
-  const [loading, setLoading]         = useState(false);
   const [err, setErr]                 = useState("");
   const [countdown, setCountdown]     = useState(trialState.msLeft || 0);
 
@@ -1174,18 +1245,18 @@ function PaymentGate({ onUnlock, s, lang }) {
   // Live countdown tick
   useEffect(() => {
     if (trialState.status !== "active") return;
-    const t = setInterval(() => {
-      const s = getTrialState();
-      if (s.status === "expired") { setTrialState(s); clearInterval(t); return; }
-      setCountdown(s.msLeft || 0);
+    const timer = setInterval(() => {
+      const ts = getTrialState();
+      if (ts.status === "expired") { setTrialState(ts); clearInterval(timer); return; }
+      setCountdown(ts.msLeft || 0);
     }, 30000);
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, [trialState.status]);
 
   // If already in active trial or paid — unlock immediately
   useEffect(() => {
     if (trialState.status === "paid" || trialState.status === "active") onUnlock();
-  }, []);
+  }, [trialState.status, onUnlock]);
 
   const plans = [
     { id: "monthly",  label: s.plan1Label, price: s.plan1Price, period: s.plan1Period, desc: s.plan1Desc, popular: false },
@@ -1194,19 +1265,21 @@ function PaymentGate({ onUnlock, s, lang }) {
   ];
 
   const handleStartTrial = () => {
-    if (!trialName.trim() || !trialEmail.includes("@")) { setErr("Please enter your name and a valid email."); return; }
+    if (!trialName.trim() || !trialEmail.includes("@")) { setErr(s.trialFormError || "Please enter your name and a valid email."); return; }
     setErr("");
     startTrial(trialEmail);
     setTrialState(getTrialState());
     setStep("trial-success");
   };
 
+  /* ── Stripe / payment redirect ────────────────────────────────
+     TODO: Replace this placeholder with your actual Stripe Checkout
+     session redirect. See: https://stripe.com/docs/payments/checkout
+     Example: window.location.href = await createCheckoutSession(plan);
+  ──────────────────────────────────────────────────────────────── */
   const handlePay = () => {
-    if (!form.name || !form.email || form.card.replace(/\s/g,"").length < 16 || form.expiry.length < 5 || form.cvv.length < 3) {
-      setErr(s.formError); return;
-    }
-    setErr(""); setLoading(true);
-    setTimeout(() => { markPaid(); setLoading(false); setStep("success"); }, 2200);
+    const chosen = plans.find(p => p.id === plan);
+    alert(`[Stripe Integration Needed]\n\nPlan: ${chosen?.label} — ${chosen?.price}\n\nReplace this alert with a redirect to your Stripe Checkout session.\nSee: https://stripe.com/docs/payments/checkout`);
   };
 
   // ── Trial success screen ──────────────────────────────────────
@@ -1215,22 +1288,22 @@ function PaymentGate({ onUnlock, s, lang }) {
       <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ maxWidth: 460, width: "100%", textAlign: "center", animation: "fadeUp .6s ease" }}>
           <div style={{ fontSize: 58, marginBottom: 16 }}>🌿</div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 10px" }}>Your 7-Day Trial Has Started!</h2>
+          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 10px" }}>{s.trialStartedTitle || "Your 7-Day Trial Has Started!"}</h2>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, lineHeight: 1.85, marginBottom: 12 }}>
-            Welcome, {trialName}! You have full access to the entire hub for the next 7 days — completely free.
+            {(s.trialStartedBody || "Welcome, {name}! You have full access to the entire hub for the next 7 days — completely free.").replace("{name}", trialName)}
           </p>
           <div style={{ background: `${trialAccent}12`, border: `1px solid ${trialAccent}30`, borderRadius: 14, padding: "14px 20px", marginBottom: 26, display: "inline-flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 20 }}>⏱</span>
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: 1, textTransform: "uppercase" }}>Trial ends in</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: 1, textTransform: "uppercase" }}>{s.trialEndsIn || "Trial ends in"}</div>
               <div style={{ fontSize: 22, fontWeight: 800, color: trialAccent, fontFamily: "'DM Sans',sans-serif" }}>{fmtCountdown(TRIAL_DAYS * MS_PER_DAY)}</div>
             </div>
           </div>
           <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, lineHeight: 1.75, marginBottom: 26 }}>
-            No card needed today. After 7 days, choose a plan to keep your access.
+            {s.trialNoCard || "No card needed today. After 7 days, choose a plan to keep your access."}
           </p>
           <button onClick={onUnlock} style={{ background: `linear-gradient(135deg,${trialAccent},#0f6e56)`, border: "none", borderRadius: 14, padding: "14px 38px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 0 28px ${trialAccent}35` }}>
-            Enter the Hub — Start Exploring →
+            {s.trialEnterBtn || "Enter the Hub — Start Exploring →"}
           </button>
         </div>
       </div>
@@ -1253,23 +1326,29 @@ function PaymentGate({ onUnlock, s, lang }) {
   if (step === "trial-signup") return (
     <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ maxWidth: 440, width: "100%", animation: "fadeUp .5s ease" }}>
-        <button onClick={() => { setStep("landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 20, fontFamily: "'DM Sans',sans-serif" }}>← Back</button>
+        <button onClick={() => { setStep("landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 20, fontFamily: "'DM Sans',sans-serif" }}>{s.checkoutBack || "← Back"}</button>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🌿</div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 30, fontStyle: "italic", color: "#fff", margin: "0 0 8px" }}>Start Your Free Trial</h2>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.75 }}>7 days of full access. No card required. No commitment.</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 30, fontStyle: "italic", color: "#fff", margin: "0 0 8px" }}>{s.trialSignupTitle || "Start Your Free Trial"}</h2>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.75 }}>{s.trialSignupSubtitle || "7 days of full access. No card required. No commitment."}</p>
         </div>
         <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: 22 }}>
-          {/* What's included */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.3)", fontWeight: 700, marginBottom: 10 }}>What's included</div>
-            {["✦ Full access to all 4 cycle phases", "✦ 40+ smoothie, shake & juice recipes", "✦ Phase-specific workouts & meal plans", "✦ PCOS, Endometriosis & BP guides", "✦ Habit tracker & journal", "✦ Available in 8 languages"].map((item, i) => (
+            <div style={{ fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.3)", fontWeight: 700, marginBottom: 10 }}>{s.trialIncludedLabel || "What's included"}</div>
+            {(s.trialIncludedItems || [
+              "✦ Full access to all 4 cycle phases",
+              "✦ 40+ smoothie, shake & juice recipes",
+              "✦ Phase-specific workouts & meal plans",
+              "✦ PCOS, Endometriosis & BP guides",
+              "✦ Habit tracker & journal",
+              "✦ Available in 30 languages",
+            ]).map((item, i) => (
               <div key={i} style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", marginBottom: 6, lineHeight: 1.6 }}>{item}</div>
             ))}
           </div>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 18 }}>
-            {[{ key: "name", label: "Your Name", ph: "Jane Smith", val: trialName, set: setTrialName },
-              { key: "email", label: "Email Address", ph: "jane@example.com", val: trialEmail, set: setTrialEmail }].map(f => (
+            {[{ key: "name", label: s.fieldName || "Your Name", ph: s.fieldNamePh || "Jane Smith", val: trialName, set: setTrialName },
+              { key: "email", label: s.fieldEmail || "Email Address", ph: s.fieldEmailPh || "jane@example.com", val: trialEmail, set: setTrialEmail }].map(f => (
               <div key={f.key} style={{ marginBottom: 14 }}>
                 <label style={{ display: "block", fontSize: 10, color: "rgba(255,255,255,0.35)", marginBottom: 5, textTransform: "uppercase", letterSpacing: 1 }}>{f.label}</label>
                 <input type={f.key === "email" ? "email" : "text"} placeholder={f.ph} value={f.val}
@@ -1279,10 +1358,10 @@ function PaymentGate({ onUnlock, s, lang }) {
             ))}
             {err && <div style={{ fontSize: 12, color: "#ff7070", marginBottom: 12 }}>⚠ {err}</div>}
             <button onClick={handleStartTrial} style={{ width: "100%", background: `linear-gradient(135deg,${trialAccent},#0f6e56)`, border: "none", borderRadius: 11, padding: "13px 0", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 0 18px ${trialAccent}30` }}>
-              Start My Free 7-Day Trial →
+              {s.trialStartBtn || "Start My Free 7-Day Trial →"}
             </button>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", textAlign: "center", marginTop: 10 }}>
-              No credit card required · Cancel anytime · Full access immediately
+              {s.trialFooter || "No credit card required · Cancel anytime · Full access immediately"}
             </p>
           </div>
         </div>
@@ -1300,40 +1379,21 @@ function PaymentGate({ onUnlock, s, lang }) {
           <button onClick={() => { setStep(isExpired ? "expired" : "landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 18, fontFamily: "'DM Sans',sans-serif" }}>{s.checkoutBack}</button>
           {isExpired && (
             <div style={{ background: "rgba(255,170,50,0.08)", border: "1px solid rgba(255,170,50,0.25)", borderRadius: 12, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "rgba(255,200,80,0.8)" }}>
-              ⏱ Your 7-day trial has ended. Choose a plan to keep access.
+              ⏱ {s.trialExpiredBanner || "Your 7-day trial has ended. Choose a plan to keep access."}
             </div>
           )}
           <div style={{ background: `${accent}12`, border: `1px solid ${accent}30`, borderRadius: 16, padding: "13px 18px", marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div><div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{chosen?.label}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{chosen?.desc}</div></div>
             <div style={{ fontSize: 22, fontWeight: 800, color: accent }}>{chosen?.price}</div>
           </div>
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: 20 }}>
-            <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 800, fontFamily: "'DM Sans',sans-serif", marginBottom: 14 }}>{s.checkoutSummaryLabel}</div>
-            {[
-              { key: "name",  label: s.fieldName,  ph: s.fieldNamePh,  type: "text" },
-              { key: "email", label: s.fieldEmail, ph: s.fieldEmailPh, type: "email" },
-              { key: "card",  label: s.fieldCard,  ph: s.fieldCardPh,  type: "text", maxLen: 19 },
-            ].map(f => (
-              <div key={f.key} style={{ marginBottom: 13 }}>
-                <label style={{ display: "block", fontSize: 10, color: "rgba(255,255,255,0.35)", marginBottom: 5, textTransform: "uppercase", letterSpacing: 1 }}>{f.label}</label>
-                <input type={f.type} placeholder={f.ph} maxLength={f.maxLen} value={form[f.key]}
-                  onChange={e => { let v = e.target.value; if (f.key === "card") v = v.replace(/\D/g,"").replace(/(.{4})/g,"$1 ").trim().slice(0,19); setForm(p => ({...p,[f.key]:v})); }}
-                  style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, padding: "9px 13px", color: "#fff", fontSize: 13, fontFamily: "'DM Sans',sans-serif" }} />
-              </div>
-            ))}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-              {[{ key: "expiry", label: s.fieldExpiry, ph: s.fieldExpiryPh, max: 5 }, { key: "cvv", label: s.fieldCvv, ph: s.fieldCvvPh, max: 4 }].map(f => (
-                <div key={f.key}>
-                  <label style={{ display: "block", fontSize: 10, color: "rgba(255,255,255,0.35)", marginBottom: 5, textTransform: "uppercase", letterSpacing: 1 }}>{f.label}</label>
-                  <input type="text" placeholder={f.ph} maxLength={f.max} value={form[f.key]}
-                    onChange={e => { let v = e.target.value.replace(/\D/g,""); if (f.key === "expiry") v = v.length > 2 ? v.slice(0,2)+"/"+v.slice(2,4) : v; setForm(p => ({...p,[f.key]:v})); }}
-                    style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, padding: "9px 13px", color: "#fff", fontSize: 13, fontFamily: "'DM Sans',sans-serif" }} />
-                </div>
-              ))}
-            </div>
-            {err && <div style={{ fontSize: 12, color: "#ff7070", marginBottom: 12 }}>⚠ {err}</div>}
-            <button onClick={handlePay} disabled={loading} style={{ width: "100%", background: loading ? "rgba(192,132,252,0.3)" : `linear-gradient(135deg,${accent},#7c3aed)`, border: "none", borderRadius: 11, padding: "12px 0", color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all .3s", boxShadow: loading ? "none" : `0 0 18px ${accent}35` }}>
-              {loading ? s.processingBtn : `${s.payBtn} ${chosen?.price}`}
+          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: 24, textAlign: "center" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
+            <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 800, fontFamily: "'DM Sans',sans-serif", marginBottom: 14 }}>{s.checkoutSummaryLabel || "Secure Checkout"}</div>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.8, marginBottom: 20 }}>
+              {s.stripeRedirectMsg || "You will be redirected to Stripe's secure payment page to complete your purchase."}
+            </p>
+            <button onClick={handlePay} style={{ width: "100%", background: `linear-gradient(135deg,${accent},#7c3aed)`, border: "none", borderRadius: 11, padding: "13px 0", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 0 18px ${accent}35` }}>
+              {s.payBtn || "Pay"} — {chosen?.price}
             </button>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", textAlign: "center", marginTop: 10 }}>{s.payFooter}</p>
           </div>
@@ -1347,9 +1407,9 @@ function PaymentGate({ onUnlock, s, lang }) {
     <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", color: "#fff", fontFamily: "'DM Sans',sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ maxWidth: 600, width: "100%", textAlign: "center", animation: "fadeUp .6s ease" }}>
         <div style={{ fontSize: 52, marginBottom: 16 }}>🌑</div>
-        <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 10px" }}>Your Free Trial Has Ended</h2>
+        <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 10px" }}>{s.trialExpiredTitle || "Your Free Trial Has Ended"}</h2>
         <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.85, marginBottom: 32, maxWidth: 440, margin: "0 auto 32px" }}>
-          We hope you loved your 7 days inside the hub. Choose a plan below to keep your full access and continue your cycle-syncing journey.
+          {s.trialExpiredBody || "We hope you loved your 7 days inside the hub. Choose a plan below to keep your full access and continue your cycle-syncing journey."}
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(165px,1fr))", gap: 13, marginBottom: 28 }}>
           {plans.map(p => (
@@ -1380,16 +1440,16 @@ function PaymentGate({ onUnlock, s, lang }) {
         {/* FREE TRIAL HERO BANNER */}
         <div style={{ background: "linear-gradient(135deg,rgba(62,203,128,0.12),rgba(62,203,128,0.05))", border: "1px solid rgba(62,203,128,0.3)", borderRadius: 18, padding: "18px 22px", marginBottom: 28, animation: "fadeUp .7s .12s ease both" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🌿</div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "#3ecb80", marginBottom: 6, fontFamily: "'DM Sans',sans-serif" }}>Try it FREE for 7 days</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#3ecb80", marginBottom: 6, fontFamily: "'DM Sans',sans-serif" }}>{s.trialHeroTitle || "Try it FREE for 7 days"}</div>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", lineHeight: 1.75, marginBottom: 14 }}>
-            No credit card. No commitment. Full access to the entire hub from day one.
+            {s.trialHeroDesc || "No credit card. No commitment. Full access to the entire hub from day one."}
           </div>
           <button onClick={() => { setErr(""); setStep("trial-signup"); }} style={{ background: "linear-gradient(135deg,#3ecb80,#0f6e56)", border: "none", borderRadius: 12, padding: "12px 32px", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 0 20px rgba(62,203,128,0.3)" }}>
-            Start Free Trial — No Card Needed
+            {s.trialHeroBtn || "Start Free Trial — No Card Needed"}
           </button>
         </div>
 
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.22)", marginBottom: 20 }}>— or choose a paid plan below —</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.22)", marginBottom: 20 }}>{s.orChoosePlan || "— or choose a paid plan below —"}</div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 28, animation: "fadeUp .7s .15s ease both" }}>
           {(s.paymentFeatures || BASE_STRINGS.paymentFeatures).map(f => <span key={f} style={{ background: "rgba(192,132,252,0.09)", border: "1px solid rgba(192,132,252,0.22)", borderRadius: 20, padding: "5px 13px", fontSize: 12, color: "rgba(255,255,255,0.68)", fontWeight: 500 }}>{f}</span>)}
@@ -1556,10 +1616,10 @@ export default function GoWithYourFlow() {
             <div style={{ background: "rgba(62,203,128,0.08)", border: "1px solid rgba(62,203,128,0.22)", borderRadius: 12, padding: "9px 16px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
               <div style={{ fontSize: 12, color: "rgba(62,203,128,0.85)", display: "flex", alignItems: "center", gap: 7 }}>
                 <span>🌿</span>
-                <span><strong style={{ fontWeight: 700 }}>Free Trial</strong> — {fmtCountdown(trialMs)} remaining</span>
+                <span><strong style={{ fontWeight: 700 }}>{s.trialBannerLabel || "Free Trial"}</strong> — {fmtCountdown(trialMs)} {s.trialBannerRemaining || "remaining"}</span>
               </div>
               <button onClick={() => setUnlocked(false)} style={{ background: "rgba(62,203,128,0.15)", border: "1px solid rgba(62,203,128,0.3)", borderRadius: 8, padding: "4px 12px", color: "#3ecb80", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>
-                Upgrade Now
+                {s.trialUpgradeBtn || "Upgrade Now"}
               </button>
             </div>
           )}
@@ -1738,12 +1798,13 @@ export default function GoWithYourFlow() {
                     <SecTitle color={phase.accent}>{s.pcosTitle || "PCOS"}</SecTitle>
                     <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.9, margin: 0 }}>{s.pcosBody}</p>
                   </Card>
+                  {/* PCOS Tea guide */}
                   <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                    {["menstrual","follicular","ovulatory","luteal"].map(cp => (
-                      <Pill key={cp} label={cp} color={phase.color} active={condPhase === cp} onClick={() => setCondPhase(cp)} />
+                    {PHASES_META.map(cp => (
+                      <Pill key={cp.id} label={cp.name} color={phase.color} active={condPhase === cp.id} onClick={() => setCondPhase(cp.id)} />
                     ))}
                   </div>
-                  {/* PCOS Tea guide */}
+                  {/* PCOS Tea data */}
                   {(() => {
                     const pcosTeas = {
                       menstrual:  [{ n: "Ginger-Cinnamon Tea",          i: "Fresh ginger 1-inch, cinnamon stick, lemon, hot water",         b: "Reduces inflammation; stabilizes blood sugar.",                              w: "Morning / pre-workout" },
@@ -1801,8 +1862,8 @@ export default function GoWithYourFlow() {
                     <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.9, margin: 0 }}>{s.endoBody}</p>
                   </Card>
                   <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                    {["menstrual","follicular","ovulatory","luteal"].map(cp => (
-                      <Pill key={cp} label={cp} color={phase.color} active={condPhase === cp} onClick={() => setCondPhase(cp)} />
+                    {PHASES_META.map(cp => (
+                      <Pill key={cp.id} label={cp.name} color={phase.color} active={condPhase === cp.id} onClick={() => setCondPhase(cp.id)} />
                     ))}
                   </div>
                   {(() => {
@@ -2043,10 +2104,10 @@ export default function GoWithYourFlow() {
               <Card>
                 <SecTitle color={phase.accent}>📓 {s.journalTitle} — {s.journalWeekLabel} {weekNum}</SecTitle>
                 <p style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", margin: "0 0 15px" }}>{s.journalDesc}</p>
-                {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day, i) => (
-                  <div key={day} style={{ marginBottom: 12 }}>
+                {(s.journalDays || ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]).map((day, i) => (
+                  <div key={i} style={{ marginBottom: 12 }}>
                     <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.45)", marginBottom: 5 }}>{day}</label>
-                    <textarea value={journal[`${weekNum}-${day}`] || ""} onChange={e => setJournal(p => ({...p,[`${weekNum}-${day}`]:e.target.value}))} placeholder={s.journalDayPlaceholder} rows={2}
+                    <textarea value={journal[`${weekNum}-${i}`] || ""} onChange={e => setJournal(p => ({...p,[`${weekNum}-${i}`]:e.target.value}))} placeholder={s.journalDayPlaceholder} rows={2}
                       style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 9, padding: "9px 12px", color: "rgba(255,255,255,0.72)", fontSize: 12, fontFamily: "'DM Sans',sans-serif", resize: "vertical", lineHeight: 1.7, direction: rtl ? "rtl" : "ltr" }} />
                   </div>
                 ))}
