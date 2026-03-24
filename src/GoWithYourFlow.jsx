@@ -1,5 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
+/* ── Anthropic API key ─────────────────────────────────────────
+   Set VITE_ANTHROPIC_API_KEY in your Vercel environment variables.
+   In dev, create a .env file:  VITE_ANTHROPIC_API_KEY=sk-ant-...
+──────────────────────────────────────────────────────────────── */
+const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY ?? "";
+
 /* ═══════════════════════════════════════════════════════════════
    SUPPORTED LANGUAGES — 30 languages with native names & RTL flag
 ═══════════════════════════════════════════════════════════════ */
@@ -528,44 +534,136 @@ const PHASE_RECIPES = {
 
 /* ═══════════════════════════════════════════════════════════════
    AI TRANSLATION ENGINE using Claude API
+   — chunked into 3 parts to stay within token limits
+   — includes required browser-access header
 ═══════════════════════════════════════════════════════════════ */
 const translationCache = {};
 
-async function translateStrings(strings, targetLang, targetName) {
-  if (targetLang === "en") return strings;
-  const cacheKey = `${targetLang}`;
-  if (translationCache[cacheKey]) return translationCache[cacheKey];
-
-  // Build a compact JSON payload of all strings to translate
-  const payload = JSON.stringify(strings, null, 0);
-
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+async function callClaude(payload, targetLang, targetName) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": ANTHROPIC_KEY,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-5-20251001",
       max_tokens: 8000,
-      system: `You are a professional translator specializing in health, wellness, and women's health content. Translate the provided JSON object into ${targetName} (language code: ${targetLang}). 
-RULES:
-- Return ONLY valid JSON with exactly the same structure/keys as the input
-- Translate ALL string values, including strings inside arrays and nested objects
-- Keep emojis exactly as-is
-- Keep technical terms like "PCOS", "LH/FSH", "EGCG" untranslated
-- Keep brand-like names (e.g. "Ashwagandha Moon Milk") translated naturally
-- Keep ingredient names translated naturally into ${targetName}
-- For RTL languages (Arabic, Hebrew, Farsi, Urdu), write naturally in that language
-- Do not add any explanation or markdown — only output the JSON object`,
-      messages: [{ role: "user", content: `Translate this JSON to ${targetName}:\n${payload}` }],
+      system: `You are a professional translator for health and wellness content. Translate the JSON object into ${targetName} (code: ${targetLang}).
+STRICT RULES:
+- Return ONLY a valid JSON object. No markdown, no code fences, no explanation.
+- Keep every key name unchanged. Only translate the values.
+- Keep emojis exactly as-is.
+- Do NOT translate: PCOS, LH/FSH, EGCG, RTL, Ashwagandha, Chasteberry, Vitex, Spearmint, Hibiscus, Matcha.
+- Translate ingredient names naturally into ${targetName}.
+- For RTL languages (Arabic, Hebrew, Persian, Urdu) write text naturally right-to-left.`,
+      messages: [{ role: "user", content: `Translate to ${targetName}:\n${payload}` }],
     }),
   });
-
-  const data = await response.json();
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "API error");
   const raw = data.content?.[0]?.text || "";
-  // Strip markdown code fences if present
-  const clean = raw.replace(/```json\n?/gi, "").replace(/```\n?/gi, "").trim();
-  const parsed = JSON.parse(clean);
-  translationCache[cacheKey] = parsed;
-  return parsed;
+  const clean = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+  return JSON.parse(clean);
+}
+
+async function translateStrings(strings, targetLang, targetName) {
+  if (targetLang === "en") return strings;
+  if (translationCache[targetLang]) return translationCache[targetLang];
+
+  // Split BASE_STRINGS into 3 smaller chunks so we never exceed token limits
+  const {
+    // Chunk 1 — navigation, welcome, payment UI
+    tagline, heroTitle, tabs, getBioLink,
+    welcomeQuote, feature1Title, feature1Desc, feature2Title, feature2Desc,
+    feature3Title, feature3Desc, feature4Title, feature4Desc,
+    alignmentTitle, alignmentBody1, alignmentBody2,
+    foundationsTitle, principle1Title, principle1Desc, principle2Title, principle2Desc,
+    principle3Title, principle3Desc, principle4Title, principle4Desc,
+    proTipLabel, proTipText, dailyPracticesTitle,
+    practiceVizName, practiceVizDesc, practiceAffName, practiceAffDesc,
+    practiceThanksName, practiceThanksDesc, practiceBreathName, practiceBreathDesc,
+    paymentTagline, paymentHeroTitle, paymentSubtitle, paymentFeatures,
+    plan1Label, plan1Price, plan1Period, plan1Desc,
+    plan2Label, plan2Price, plan2Period, plan2Desc,
+    plan3Label, plan3Price, plan3Period, plan3Desc,
+    mostPopular, selectedLabel, getAccessBtn, choosePlanBtn, guarantee,
+    testimonials, checkoutBack, checkoutSummaryLabel,
+    fieldName, fieldNamePh, fieldEmail, fieldEmailPh,
+    fieldCard, fieldCardPh, fieldExpiry, fieldExpiryPh, fieldCvv, fieldCvvPh,
+    payBtn, processingBtn, payFooter, formError,
+    successEmoji, successTitle, successBody, successBtn,
+    bioTitle, bioDesc, bioCopyBtn, bioCopiedBtn, bioCaptionsLabel,
+    bioCaptions, bioDeployNote, languageLabel, translatingLabel, translateError,
+
+    // Chunk 2 — phase, conditions, tracker labels
+    phaseSectionTitle, phaseSubTabs, workoutPlanTitle, smoothiesTitle, shakesTitle,
+    juicesTitle, mealsTitle, teasTitle, ingredientsLabel, benefitLabel, whenLabel,
+    restLabel, dayLabels, mealLabels, affirmationLabel,
+    conditionsTitle, conditionsList, pcosTitle, pcosBody, endoTitle, endoBody,
+    hbpTitle, hbpBody, teaGuideLabel, keyTakeawaysTitle, avoidTitle,
+    herbsAvoidTitle, precautionsTitle, lifestyleTitle,
+    morningTeasTitle, morningTeasDesc, daytimeTeasTitle, daytimeTeasDesc,
+    eveningTeasTitle, eveningTeasDesc, additionalSupportTitle, hbpDisclaimer,
+    trackerTitle, weekLabel, phaseLabel, habitGroups,
+    measurementsTitle, measureFields, energyMoodTitle, energyLabel,
+    energyLevels, moodLabel, moodPlaceholder,
+
+    // Chunk 3 — rest, journal, conclusion
+    ...chunk3
+  } = strings;
+
+  const chunk1 = {
+    tagline, heroTitle, tabs, getBioLink,
+    welcomeQuote, feature1Title, feature1Desc, feature2Title, feature2Desc,
+    feature3Title, feature3Desc, feature4Title, feature4Desc,
+    alignmentTitle, alignmentBody1, alignmentBody2,
+    foundationsTitle, principle1Title, principle1Desc, principle2Title, principle2Desc,
+    principle3Title, principle3Desc, principle4Title, principle4Desc,
+    proTipLabel, proTipText, dailyPracticesTitle,
+    practiceVizName, practiceVizDesc, practiceAffName, practiceAffDesc,
+    practiceThanksName, practiceThanksDesc, practiceBreathName, practiceBreathDesc,
+    paymentTagline, paymentHeroTitle, paymentSubtitle, paymentFeatures,
+    plan1Label, plan1Price, plan1Period, plan1Desc,
+    plan2Label, plan2Price, plan2Period, plan2Desc,
+    plan3Label, plan3Price, plan3Period, plan3Desc,
+    mostPopular, selectedLabel, getAccessBtn, choosePlanBtn, guarantee,
+    testimonials, checkoutBack, checkoutSummaryLabel,
+    fieldName, fieldNamePh, fieldEmail, fieldEmailPh,
+    fieldCard, fieldCardPh, fieldExpiry, fieldExpiryPh, fieldCvv, fieldCvvPh,
+    payBtn, processingBtn, payFooter, formError,
+    successEmoji, successTitle, successBody, successBtn,
+    bioTitle, bioDesc, bioCopyBtn, bioCopiedBtn, bioCaptionsLabel,
+    bioCaptions, bioDeployNote, languageLabel, translatingLabel, translateError,
+  };
+
+  const chunk2 = {
+    phaseSectionTitle, phaseSubTabs, workoutPlanTitle, smoothiesTitle, shakesTitle,
+    juicesTitle, mealsTitle, teasTitle, ingredientsLabel, benefitLabel, whenLabel,
+    restLabel, dayLabels, mealLabels, affirmationLabel,
+    conditionsTitle, conditionsList, pcosTitle, pcosBody, endoTitle, endoBody,
+    hbpTitle, hbpBody, teaGuideLabel, keyTakeawaysTitle, avoidTitle,
+    herbsAvoidTitle, precautionsTitle, lifestyleTitle,
+    morningTeasTitle, morningTeasDesc, daytimeTeasTitle, daytimeTeasDesc,
+    eveningTeasTitle, eveningTeasDesc, additionalSupportTitle, hbpDisclaimer,
+    trackerTitle, weekLabel, phaseLabel, habitGroups,
+    measurementsTitle, measureFields, energyMoodTitle, energyLabel,
+    energyLevels, moodLabel, moodPlaceholder,
+  };
+
+  // Translate all 3 chunks in parallel
+  const [t1, t2, t3] = await Promise.all([
+    callClaude(JSON.stringify(chunk1), targetLang, targetName),
+    callClaude(JSON.stringify(chunk2), targetLang, targetName),
+    callClaude(JSON.stringify(chunk3), targetLang, targetName),
+  ]);
+
+  const result = { ...t1, ...t2, ...t3 };
+  translationCache[targetLang] = result;
+  return result;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -635,14 +733,23 @@ function LangSelector({ currentLang, onChange, accentColor }) {
    TRANSLATION LOADING OVERLAY
 ═══════════════════════════════════════════════════════════════ */
 function TranslatingOverlay({ langName }) {
+  const [step, setStep] = useState(0);
+  const steps = ["Preparing content…", "Translating UI & payment…", "Translating phases & recipes…", "Translating journal & guide…"];
+  useEffect(() => {
+    const t = setInterval(() => setStep(s => Math.min(s + 1, steps.length - 1)), 1800);
+    return () => clearInterval(t);
+  }, []);
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(7,7,14,0.88)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 9000, backdropFilter: "blur(6px)" }}>
-      <div style={{ fontSize: 40, marginBottom: 20, animation: "glow 1.5s ease-in-out infinite" }}>🌕</div>
-      <div style={{ fontSize: 16, color: "#fff", fontWeight: 600, fontFamily: "'DM Sans',sans-serif", marginBottom: 8 }}>Translating to {langName}…</div>
-      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "'DM Sans',sans-serif" }}>This takes just a moment ✨</div>
-      <div style={{ marginTop: 24, display: "flex", gap: 8 }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(7,7,14,0.92)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 9000, backdropFilter: "blur(8px)" }}>
+      <div style={{ fontSize: 44, marginBottom: 22, animation: "glow 1.5s ease-in-out infinite" }}>🌕</div>
+      <div style={{ fontSize: 17, color: "#fff", fontWeight: 700, fontFamily: "'DM Sans',sans-serif", marginBottom: 6 }}>Translating to {langName}</div>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", fontFamily: "'DM Sans',sans-serif", marginBottom: 28, height: 20 }}>{steps[step]}</div>
+      <div style={{ width: 220, height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 4, overflow: "hidden" }}>
+        <div style={{ height: "100%", background: "linear-gradient(90deg,#9b7fe8,#c084fc)", borderRadius: 4, width: `${((step + 1) / steps.length) * 100}%`, transition: "width 1.6s ease" }} />
+      </div>
+      <div style={{ marginTop: 18, display: "flex", gap: 8 }}>
         {[0, 1, 2].map(i => (
-          <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "#9b7fe8", animation: `glow 1.2s ${i * 0.2}s ease-in-out infinite` }} />
+          <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: "#9b7fe8", animation: `glow 1.2s ${i * 0.2}s ease-in-out infinite` }} />
         ))}
       </div>
     </div>
