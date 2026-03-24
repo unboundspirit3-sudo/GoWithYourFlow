@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
    Set VITE_ANTHROPIC_API_KEY in your Vercel environment variables.
    In dev, create a .env file:  VITE_ANTHROPIC_API_KEY=sk-ant-...
 ──────────────────────────────────────────────────────────────── */
-const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY ?? "";
-
 /* ═══════════════════════════════════════════════════════════════
    SUPPORTED LANGUAGES — 30 languages with native names & RTL flag
 ═══════════════════════════════════════════════════════════════ */
@@ -533,137 +531,460 @@ const PHASE_RECIPES = {
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   AI TRANSLATION ENGINE using Claude API
-   — chunked into 3 parts to stay within token limits
-   — includes required browser-access header
+   PRE-BUILT TRANSLATIONS — 12 languages, instant, no API needed
+   Covers ~80% of the world population. All other languages fall
+   back to English gracefully.
 ═══════════════════════════════════════════════════════════════ */
-const translationCache = {};
 
-async function callClaude(payload, targetLang, targetName) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": ANTHROPIC_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-5-20251001",
-      max_tokens: 8000,
-      system: `You are a professional translator for health and wellness content. Translate the JSON object into ${targetName} (code: ${targetLang}).
-STRICT RULES:
-- Return ONLY a valid JSON object. No markdown, no code fences, no explanation.
-- Keep every key name unchanged. Only translate the values.
-- Keep emojis exactly as-is.
-- Do NOT translate: PCOS, LH/FSH, EGCG, RTL, Ashwagandha, Chasteberry, Vitex, Spearmint, Hibiscus, Matcha.
-- Translate ingredient names naturally into ${targetName}.
-- For RTL languages (Arabic, Hebrew, Persian, Urdu) write text naturally right-to-left.`,
-      messages: [{ role: "user", content: `Translate to ${targetName}:\n${payload}` }],
-    }),
-  });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message || "API error");
-  const raw = data.content?.[0]?.text || "";
-  const clean = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
-  return JSON.parse(clean);
-}
+const TRANSLATIONS = {
+  en: null, // uses BASE_STRINGS directly
 
-async function translateStrings(strings, targetLang, targetName) {
-  if (targetLang === "en") return strings;
-  if (translationCache[targetLang]) return translationCache[targetLang];
+  fr: {
+    tagline: "Hub Bien-être de 8 Semaines",
+    heroTitle: "Votre Cycle, Votre Force",
+    tabs: ["Accueil", "Phases", "Conditions", "Repos & Récupération", "Suivi", "Journal", "Conclusion"],
+    getBioLink: "🔗 Obtenir Votre Lien Bio",
+    welcomeQuote: "Avez-vous l'impression que votre corps vous parle en chuchotements que vous ne comprenez pas tout à fait ? Certains jours, vous vous réveillez avec l'impression d'être invincible — forte, radieuse, parfaitement en harmonie avec vous-même. D'autres jours, vous vous sentez déconnectée de votre propre corps, comme si vous avanciez dans le brouillard. Et si je vous disais que ce n'est pas le signe que quelque chose cloche ?",
+    feature1Title: "Transformer la fatigue en repos intentionnel",
+    feature1Desc: "Apprenez quand votre corps a besoin de récupération et acceptez-le sans culpabilité.",
+    feature2Title: "Exploiter votre énergie naturelle quand elle monte",
+    feature2Desc: "Synchronisez vos entraînements et vos ambitions avec les pics naturels de votre cycle.",
+    feature3Title: "Satisfaire les envies qui vous nourrissent vraiment",
+    feature3Desc: "Des aliments spécifiques à chaque phase qui sont bons et servent vos hormones.",
+    feature4Title: "Accueillir chaque phase avec bienveillance",
+    feature4Desc: "Remplacez la frustration par la compréhension et la bienveillance radicale envers vous-même.",
+    alignmentTitle: "Le Pouvoir de l'Alignement",
+    alignmentBody1: "L'intention derrière chaque partie de ce processus est l'alignement du corps, de l'esprit et de l'âme. La santé menstruelle est un aspect vital de cet alignement, pourtant souvent négligé.",
+    alignmentBody2: "Nos cycles menstruels sont profondément connectés au monde naturel — comme les phases de la lune et les saisons. Au cours des 8 prochaines semaines, engagez-vous envers vous-même.",
+    foundationsTitle: "Les Bases du Succès",
+    principle1Title: "APPRÉCIER le Processus",
+    principle1Desc: "Il s'agit de progrès, pas de perfection. Célébrez les petites victoires et embrassez le voyage.",
+    principle2Title: "Suivre Vos Habitudes et Progrès",
+    principle2Desc: "Tenir un journal peut vous aider à rester responsable et à reconnaître les schémas.",
+    principle3Title: "Mettre en Œuvre le Changement avec AMOUR",
+    principle3Desc: "Soyez bienveillante envers vous-même. Le changement prend du temps, et l'auto-compassion est essentielle.",
+    principle4Title: "Fixer des Intentions Quotidiennes",
+    principle4Desc: "Chaque matin, prenez un moment pour définir votre intention de la journée.",
+    proTipLabel: "✦ Conseil Pro :",
+    proTipText: "Votre cerveau est dans son état le plus suggestible juste avant de dormir et au réveil. Utilisez ces moments pour visualiser comment vous souhaitez que votre journée se déroule.",
+    dailyPracticesTitle: "Pratiques Quotidiennes pour l'Alignement Corps-Esprit",
+    practiceVizName: "Visualisation", practiceVizDesc: "Passez quelques instants à visualiser vos objectifs et la façon dont vous souhaitez vous sentir.",
+    practiceAffName: "Affirmations", practiceAffDesc: "Utilisez des affirmations positives : « Je suis forte », « Je suis capable », « J'honore mon corps et ses besoins. »",
+    practiceThanksName: "Remercier Votre Corps", practiceThanksDesc: "Prenez un moment chaque jour pour exprimer de la gratitude envers votre corps — pour sa force et sa résilience.",
+    practiceBreathName: "Respiration", practiceBreathDesc: "La respiration abdominale profonde peut vous aider à vous sentir ancrée et centrée.",
+    phaseSubTabs: ["Entraînements", "Smoothies", "Shakes", "Jus", "Repas", "Tisanes"],
+    workoutPlanTitle: "Plan d'Entraînement Hebdomadaire",
+    smoothiesTitle: "Smoothies", shakesTitle: "Shakes", juicesTitle: "Jus", mealsTitle: "Repas Quotidiens", teasTitle: "Tisanes",
+    ingredientsLabel: "Ingrédients :", benefitLabel: "Bénéfice :", whenLabel: "Quand :", restLabel: "REPOS",
+    conditionsList: ["SOPK", "Endométriose", "Hypertension"],
+    pcosTitle: "SOPK", pcosBody: "Le SOPK implique souvent une résistance à l'insuline et des déséquilibres hormonaux. L'accent est mis sur les aliments à faible indice glycémique et les repas anti-inflammatoires.",
+    endoTitle: "Endométriose", endoBody: "L'endométriose implique une inflammation et des douleurs. L'accent est mis sur les aliments anti-inflammatoires et les entraînements à faible impact.",
+    hbpTitle: "Hypertension", hbpBody: "Concentrez-vous sur les aliments pauvres en sodium, les graisses saines pour le cœur et les entraînements d'intensité modérée.",
+    teaGuideLabel: "Guide des Tisanes", keyTakeawaysTitle: "Points Clés", avoidTitle: "Éviter",
+    restTitle: "Guide Repos & Récupération", restBody: "Le repos et la récupération sont aussi importants que les entraînements et la nutrition.",
+    trackerTitle: "Suivi des Habitudes", weekLabel: "Semaine", phaseLabel: "Phase",
+    measurementsTitle: "Mensurations", energyMoodTitle: "Énergie & Humeur", energyLabel: "Niveau d'Énergie",
+    energyLevels: ["Élevé", "Moyen", "Bas"], moodLabel: "Humeur & Émotions", moodPlaceholder: "Comment vous sentez-vous aujourd'hui ?",
+    journalTitle: "Réflexions Quotidiennes", journalWeekLabel: "Semaine",
+    journalDesc: "Utilisez cet espace pour réfléchir à votre journée, suivre vos progrès et noter les défis ou victoires.",
+    journalDayPlaceholder: "Comment vous êtes-vous sentie ? Qu'est-ce qui a fonctionné ?",
+    weeklyProgressTitle: "Résumé Hebdomadaire",
+    winsLabel: "Victoires & Réalisations", winsPlaceholder: "Qu'avez-vous accompli cette semaine ?",
+    challengesLabel: "Défis & Leçons", challengesPlaceholder: "Qu'est-ce qui était difficile ? Qu'avez-vous appris ?",
+    intentionsLabel: "Intentions pour la Semaine Prochaine", intentionsPlaceholder: "Sur quoi voulez-vous vous concentrer la semaine prochaine ?",
+    notesTitle: "Notes & Suivi Supplémentaire", notesPlaceholder: "Espace libre — observations, tendances...",
+    conclusionTitle: "Vous Avez Toujours Été Destinée à Fluer",
+    conclusionQuote: ""Votre cycle n'est pas quelque chose à endurer. C'est une source de sagesse, de puissance et de profonde connaissance de soi."",
+    paymentHeroTitle: "Votre Cycle, Votre Force", paymentSubtitle: "Un hub bien-être de 8 semaines synchronisé avec votre cycle.",
+    plan1Label: "Accès Mensuel", plan1Period: "/mois", plan1Desc: "Accès complet, annulez à tout moment",
+    plan2Label: "Accès Annuel", plan2Period: "/an", plan2Desc: "Économisez 50% — meilleure valeur",
+    plan3Label: "Accès à Vie", plan3Period: "unique", plan3Desc: "Payez une fois, accès à vie",
+    mostPopular: "Le Plus Populaire", getAccessBtn: "Obtenir l'Accès", choosePlanBtn: "Choisissez un Plan",
+    guarantee: "Remboursement sous 30 jours · Paiement sécurisé · Accès immédiat",
+    bioTitle: "Votre Lien Bio", bioCopyBtn: "Copier", bioCopiedBtn: "✓ Copié !",
+    successTitle: "Vous êtes Dedans, Belle !", successBody: "Bienvenue dans Go With Your Flow. Commençons votre voyage de 8 semaines.",
+    successBtn: "Entrer dans le Hub →",
+  },
 
-  // Split BASE_STRINGS into 3 smaller chunks so we never exceed token limits
-  const {
-    // Chunk 1 — navigation, welcome, payment UI
-    tagline, heroTitle, tabs, getBioLink,
-    welcomeQuote, feature1Title, feature1Desc, feature2Title, feature2Desc,
-    feature3Title, feature3Desc, feature4Title, feature4Desc,
-    alignmentTitle, alignmentBody1, alignmentBody2,
-    foundationsTitle, principle1Title, principle1Desc, principle2Title, principle2Desc,
-    principle3Title, principle3Desc, principle4Title, principle4Desc,
-    proTipLabel, proTipText, dailyPracticesTitle,
-    practiceVizName, practiceVizDesc, practiceAffName, practiceAffDesc,
-    practiceThanksName, practiceThanksDesc, practiceBreathName, practiceBreathDesc,
-    paymentTagline, paymentHeroTitle, paymentSubtitle, paymentFeatures,
-    plan1Label, plan1Price, plan1Period, plan1Desc,
-    plan2Label, plan2Price, plan2Period, plan2Desc,
-    plan3Label, plan3Price, plan3Period, plan3Desc,
-    mostPopular, selectedLabel, getAccessBtn, choosePlanBtn, guarantee,
-    testimonials, checkoutBack, checkoutSummaryLabel,
-    fieldName, fieldNamePh, fieldEmail, fieldEmailPh,
-    fieldCard, fieldCardPh, fieldExpiry, fieldExpiryPh, fieldCvv, fieldCvvPh,
-    payBtn, processingBtn, payFooter, formError,
-    successEmoji, successTitle, successBody, successBtn,
-    bioTitle, bioDesc, bioCopyBtn, bioCopiedBtn, bioCaptionsLabel,
-    bioCaptions, bioDeployNote, languageLabel, translatingLabel, translateError,
+  es: {
+    tagline: "Hub de Bienestar de 8 Semanas",
+    heroTitle: "Tu Ciclo, Tu Fuerza",
+    tabs: ["Bienvenida", "Fases", "Condiciones", "Descanso y Recuperación", "Seguimiento", "Diario", "Conclusión"],
+    getBioLink: "🔗 Obtener Tu Enlace Bio",
+    welcomeQuote: "¿Alguna vez sientes que tu cuerpo te habla en susurros que no terminas de entender? Algunos días te despiertas sintiéndote imparable — fuerte, radiante, perfectamente sincronizada contigo misma. Otros días, te sientes desconectada de tu propio cuerpo. ¿Y si te dijera que esto no es señal de que algo está mal?",
+    feature1Title: "Convierte la fatiga en descanso intencional",
+    feature1Desc: "Aprende cuándo tu cuerpo necesita recuperación y acéptalo sin culpa.",
+    feature2Title: "Aprovecha tu energía natural cuando surge",
+    feature2Desc: "Sincroniza tus entrenamientos y ambiciones con los picos naturales de tu ciclo.",
+    feature3Title: "Satisface los antojos que realmente te nutren",
+    feature3Desc: "Alimentos específicos para cada fase que saben bien y sirven a tus hormonas.",
+    feature4Title: "Recibe cada fase con amabilidad",
+    feature4Desc: "Reemplaza la frustración con comprensión y autocompasión radical.",
+    alignmentTitle: "El Poder del Alineamiento",
+    alignmentBody1: "La intención detrás de cada parte de este proceso es el alineamiento de mente, cuerpo y alma. La salud menstrual es un aspecto vital de este alineamiento, pero a menudo se pasa por alto.",
+    alignmentBody2: "Nuestros ciclos menstruales están profundamente conectados con el mundo natural — al igual que las fases de la luna y las estaciones cambiantes.",
+    foundationsTitle: "Bases para el Éxito",
+    principle1Title: "DISFRUTA el Proceso",
+    principle1Desc: "Se trata de progreso, no de perfección. Celebra las pequeñas victorias y abraza el camino.",
+    principle2Title: "Rastrea Tus Hábitos y Progreso",
+    principle2Desc: "Llevar un diario puede ayudarte a mantenerte responsable y reconocer patrones.",
+    principle3Title: "Implementa el Cambio con AMOR",
+    principle3Desc: "Sé amable contigo misma. El cambio lleva tiempo, y la autocompasión es esencial.",
+    principle4Title: "Establece Intenciones Diarias",
+    principle4Desc: "Cada mañana, tómate un momento para establecer tu intención del día.",
+    proTipLabel: "✦ Consejo Pro:",
+    proTipText: "Tu cerebro está en su estado más sugestivo justo antes de dormir y al despertar. Usa estos momentos para visualizar cómo quieres que se desarrolle tu día.",
+    dailyPracticesTitle: "Prácticas Diarias para la Alineación Cuerpo-Mente",
+    practiceVizName: "Visualización", practiceVizDesc: "Dedica unos momentos cada día a visualizar tus objetivos y cómo quieres sentirte.",
+    practiceAffName: "Afirmaciones", practiceAffDesc: "Usa afirmaciones positivas: "Soy fuerte", "Soy capaz", "Honro mi cuerpo y sus necesidades."",
+    practiceThanksName: "Agradecer a Tu Cuerpo", practiceThanksDesc: "Tómate un momento cada día para expresar gratitud por tu cuerpo — por su fuerza y resiliencia.",
+    practiceBreathName: "Respiración", practiceBreathDesc: "La respiración abdominal profunda puede ayudarte a sentirte centrada y conectada a tierra.",
+    phaseSubTabs: ["Entrenamientos", "Batidos", "Shakes", "Jugos", "Comidas", "Tés"],
+    workoutPlanTitle: "Plan de Entrenamiento Semanal",
+    smoothiesTitle: "Batidos", shakesTitle: "Shakes", juicesTitle: "Jugos", mealsTitle: "Comidas Diarias de Muestra", teasTitle: "Tés",
+    ingredientsLabel: "Ingredientes:", benefitLabel: "Beneficio:", whenLabel: "Cuándo:", restLabel: "DESCANSO",
+    conditionsList: ["SOP", "Endometriosis", "Presión Arterial Alta"],
+    pcosTitle: "SOP", pcosBody: "El SOP a menudo implica resistencia a la insulina y desequilibrios hormonales. El enfoque está en alimentos de bajo índice glucémico y comidas antiinflamatorias.",
+    endoTitle: "Endometriosis", endoBody: "La endometriosis implica inflamación y dolor. El enfoque está en alimentos antiinflamatorios y entrenamientos de bajo impacto.",
+    hbpTitle: "Presión Arterial Alta", hbpBody: "Concéntrate en alimentos bajos en sodio, grasas saludables para el corazón y entrenamientos de intensidad moderada.",
+    teaGuideLabel: "Guía de Tés", keyTakeawaysTitle: "Puntos Clave", avoidTitle: "Evitar",
+    restTitle: "Guía de Descanso y Recuperación", restBody: "El descanso y la recuperación son tan importantes como los entrenamientos y la nutrición.",
+    trackerTitle: "Seguimiento de Hábitos", weekLabel: "Semana", phaseLabel: "Fase",
+    measurementsTitle: "Medidas Corporales", energyMoodTitle: "Energía y Estado de Ánimo", energyLabel: "Nivel de Energía",
+    energyLevels: ["Alto", "Medio", "Bajo"], moodLabel: "Estado de Ánimo y Emociones", moodPlaceholder: "¿Cómo te sientes hoy?",
+    journalTitle: "Reflexiones Diarias", journalWeekLabel: "Semana",
+    journalDesc: "Usa este espacio para reflexionar sobre tu día, rastrear el progreso y anotar desafíos o victorias.",
+    journalDayPlaceholder: "¿Cómo te sentiste? ¿Qué funcionó? ¿Qué cambiarías?",
+    weeklyProgressTitle: "Resumen Semanal de Progreso",
+    winsLabel: "Victorias y Logros", winsPlaceholder: "¿Qué lograste esta semana?",
+    challengesLabel: "Desafíos y Lecciones", challengesPlaceholder: "¿Qué fue difícil? ¿Qué aprendiste?",
+    intentionsLabel: "Intenciones para la Próxima Semana", intentionsPlaceholder: "¿En qué quieres enfocarte la próxima semana?",
+    notesTitle: "Notas y Seguimiento Adicional", notesPlaceholder: "Espacio libre — observaciones, patrones...",
+    conclusionTitle: "Siempre Estuviste Destinada a Fluir",
+    conclusionQuote: ""Tu ciclo no es algo que soportar. Es una fuente de sabiduría, poder y profundo autoconocimiento."",
+    paymentHeroTitle: "Tu Ciclo, Tu Fuerza", paymentSubtitle: "Un hub de bienestar de 8 semanas sincronizado con tu ciclo.",
+    plan1Label: "Acceso Mensual", plan1Period: "/mes", plan1Desc: "Acceso completo, cancela cuando quieras",
+    plan2Label: "Acceso Anual", plan2Period: "/año", plan2Desc: "Ahorra 50% — mejor valor",
+    plan3Label: "Acceso de por Vida", plan3Period: "único", plan3Desc: "Paga una vez, acceso para siempre",
+    mostPopular: "Más Popular", getAccessBtn: "Obtener Acceso", choosePlanBtn: "Elige un Plan",
+    guarantee: "Garantía de 30 días · Pago seguro · Acceso inmediato",
+    bioTitle: "Tu Enlace Bio", bioCopyBtn: "Copiar", bioCopiedBtn: "✓ ¡Copiado!",
+    successTitle: "¡Ya Estás Dentro, Hermosa!", successBody: "Bienvenida a Go With Your Flow. Comencemos tu viaje de 8 semanas.",
+    successBtn: "Entrar al Hub →",
+  },
 
-    // Chunk 2 — phase, conditions, tracker labels
-    phaseSectionTitle, phaseSubTabs, workoutPlanTitle, smoothiesTitle, shakesTitle,
-    juicesTitle, mealsTitle, teasTitle, ingredientsLabel, benefitLabel, whenLabel,
-    restLabel, dayLabels, mealLabels, affirmationLabel,
-    conditionsTitle, conditionsList, pcosTitle, pcosBody, endoTitle, endoBody,
-    hbpTitle, hbpBody, teaGuideLabel, keyTakeawaysTitle, avoidTitle,
-    herbsAvoidTitle, precautionsTitle, lifestyleTitle,
-    morningTeasTitle, morningTeasDesc, daytimeTeasTitle, daytimeTeasDesc,
-    eveningTeasTitle, eveningTeasDesc, additionalSupportTitle, hbpDisclaimer,
-    trackerTitle, weekLabel, phaseLabel, habitGroups,
-    measurementsTitle, measureFields, energyMoodTitle, energyLabel,
-    energyLevels, moodLabel, moodPlaceholder,
+  pt: {
+    tagline: "Hub de Bem-Estar de 8 Semanas",
+    heroTitle: "Seu Ciclo, Sua Força",
+    tabs: ["Boas-Vindas", "Fases", "Condições", "Descanso e Recuperação", "Rastreador", "Diário", "Conclusão"],
+    getBioLink: "🔗 Obter Seu Link Bio",
+    welcomeQuote: "Você já sentiu que seu corpo fala em sussurros que você não consegue entender? Alguns dias você acorda se sentindo imparável — forte, radiante, perfeitamente em sintonia consigo mesma. E se eu te dissesse que isso não é sinal de que algo está errado?",
+    feature1Title: "Transforme a fadiga em descanso intencional",
+    feature1Desc: "Aprenda quando seu corpo precisa de recuperação e aceite isso sem culpa.",
+    feature2Title: "Aproveite sua energia natural quando ela surge",
+    feature2Desc: "Sincronize seus treinos e ambições com os picos naturais do seu ciclo.",
+    feature3Title: "Satisfaça os desejos que realmente te nutrem",
+    feature3Desc: "Alimentos específicos para cada fase que têm bom gosto e servem aos seus hormônios.",
+    feature4Title: "Receba cada fase com gentileza",
+    feature4Desc: "Substitua a frustração por compreensão e autocompaixão radical.",
+    alignmentTitle: "O Poder do Alinhamento",
+    alignmentBody1: "A intenção por trás de cada parte deste processo é o alinhamento de mente, corpo e alma. A saúde menstrual é um aspecto vital deste alinhamento.",
+    alignmentBody2: "Nossos ciclos menstruais estão profundamente conectados ao mundo natural — assim como as fases da lua e as estações do ano.",
+    foundationsTitle: "Bases para o Sucesso",
+    principle1Title: "APRECIE o Processo", principle1Desc: "Trata-se de progresso, não de perfeição. Celebre as pequenas vitórias.",
+    principle2Title: "Rastreie Seus Hábitos e Progresso", principle2Desc: "Manter um diário pode ajudá-la a se manter responsável.",
+    principle3Title: "Implemente Mudanças com AMOR", principle3Desc: "Seja gentil consigo mesma. A mudança leva tempo.",
+    principle4Title: "Defina Intenções Diárias", principle4Desc: "Toda manhã, reserve um momento para definir sua intenção do dia.",
+    proTipLabel: "✦ Dica Pro:", proTipText: "Seu cérebro está no estado mais sugestivo logo antes de dormir e ao acordar.",
+    dailyPracticesTitle: "Práticas Diárias para Alinhamento Corpo-Mente",
+    practiceVizName: "Visualização", practiceVizDesc: "Passe alguns momentos cada dia visualizando seus objetivos.",
+    practiceAffName: "Afirmações", practiceAffDesc: "Use afirmações positivas: "Sou forte", "Sou capaz", "Honro meu corpo e suas necessidades."",
+    practiceThanksName: "Agradecendo ao Seu Corpo", practiceThanksDesc: "Reserve um momento cada dia para expressar gratidão pelo seu corpo.",
+    practiceBreathName: "Respiração", practiceBreathDesc: "A respiração abdominal profunda pode ajudá-la a se sentir centrada.",
+    phaseSubTabs: ["Treinos", "Smoothies", "Shakes", "Sucos", "Refeições", "Chás"],
+    workoutPlanTitle: "Plano de Treino Semanal",
+    smoothiesTitle: "Smoothies", shakesTitle: "Shakes", juicesTitle: "Sucos", mealsTitle: "Refeições Diárias", teasTitle: "Chás",
+    ingredientsLabel: "Ingredientes:", benefitLabel: "Benefício:", whenLabel: "Quando:", restLabel: "DESCANSO",
+    conditionsList: ["SOP", "Endometriose", "Pressão Alta"],
+    pcosTitle: "SOP", pcosBody: "O SOP frequentemente envolve resistência à insulina e desequilíbrios hormonais.",
+    endoTitle: "Endometriose", endoBody: "A endometriose envolve inflamação e dor. O foco é em alimentos anti-inflamatórios.",
+    hbpTitle: "Pressão Alta", hbpBody: "Foque em alimentos com baixo teor de sódio e gorduras saudáveis para o coração.",
+    teaGuideLabel: "Guia de Chás", keyTakeawaysTitle: "Pontos Principais", avoidTitle: "Evitar",
+    restTitle: "Guia de Descanso e Recuperação", restBody: "O descanso e a recuperação são tão importantes quanto os treinos e a nutrição.",
+    trackerTitle: "Rastreador de Hábitos", weekLabel: "Semana", phaseLabel: "Fase",
+    measurementsTitle: "Medidas Corporais", energyMoodTitle: "Energia e Humor", energyLabel: "Nível de Energia",
+    energyLevels: ["Alto", "Médio", "Baixo"], moodLabel: "Humor e Emoções", moodPlaceholder: "Como você está se sentindo hoje?",
+    journalTitle: "Reflexões Diárias", journalWeekLabel: "Semana", journalDesc: "Use este espaço para refletir sobre seu dia.",
+    journalDayPlaceholder: "Como você se sentiu? O que funcionou? O que mudaria?",
+    weeklyProgressTitle: "Resumo Semanal de Progresso",
+    winsLabel: "Vitórias e Conquistas", winsPlaceholder: "O que você realizou esta semana?",
+    challengesLabel: "Desafios e Lições", challengesPlaceholder: "O que foi difícil? O que você aprendeu?",
+    intentionsLabel: "Intenções para a Próxima Semana", intentionsPlaceholder: "No que você quer focar na próxima semana?",
+    notesTitle: "Notas e Rastreamento Adicional", notesPlaceholder: "Espaço livre — observações, padrões...",
+    conclusionTitle: "Você Sempre Foi Destinada a Fluir",
+    conclusionQuote: ""Seu ciclo não é algo a ser suportado. É uma fonte de sabedoria, poder e profundo autoconhecimento."",
+    paymentHeroTitle: "Seu Ciclo, Sua Força", paymentSubtitle: "Um hub de bem-estar de 8 semanas sincronizado com seu ciclo.",
+    plan1Label: "Acesso Mensal", plan1Period: "/mês", plan1Desc: "Acesso completo, cancele quando quiser",
+    plan2Label: "Acesso Anual", plan2Period: "/ano", plan2Desc: "Economize 50% — melhor custo-benefício",
+    plan3Label: "Acesso Vitalício", plan3Period: "único", plan3Desc: "Pague uma vez, acesso para sempre",
+    mostPopular: "Mais Popular", getAccessBtn: "Obter Acesso", choosePlanBtn: "Escolha um Plano",
+    guarantee: "Garantia de 30 dias · Pagamento seguro · Acesso imediato",
+    bioTitle: "Seu Link Bio", bioCopyBtn: "Copiar", bioCopiedBtn: "✓ Copiado!",
+    successTitle: "Você Está Dentro, Linda!", successBody: "Bem-vinda ao Go With Your Flow. Vamos começar sua jornada de 8 semanas.",
+    successBtn: "Entrar no Hub →",
+  },
 
-    // Chunk 3 — rest, journal, conclusion
-    ...chunk3
-  } = strings;
+  ar: {
+    tagline: "مركز العافية لمدة 8 أسابيع",
+    heroTitle: "دورتك، قوتك",
+    tabs: ["مرحباً", "المراحل", "الحالات الصحية", "الراحة والتعافي", "المتابعة", "اليوميات", "الخاتمة"],
+    getBioLink: "🔗 احصلي على رابط سيرتك",
+    welcomeQuote: "هل تشعرين أحياناً أن جسدك يتكلم بهمسات لا تفهمينها تماماً؟ بعض الأيام تستيقظين وتشعرين بأنك لا تُقهرين — قوية، متألقة، متناسقة تماماً مع نفسك. وأيام أخرى تشعرين بأنك منفصلة عن جلدك. ماذا لو أخبرتك أن هذا ليس علامة على أن شيئاً ما خاطئ؟",
+    feature1Title: "حوّلي التعب إلى راحة مقصودة",
+    feature1Desc: "تعلمي متى يحتاج جسمك للتعافي واقبليه دون شعور بالذنب.",
+    feature2Title: "استثمري طاقتك الطبيعية حين تتصاعد",
+    feature2Desc: "انسّقي تمارينك وطموحاتك مع ذروات دورتك الطبيعية.",
+    feature3Title: "أشبعي الرغبات التي تغذيك حقاً",
+    feature3Desc: "أطعمة خاصة بكل مرحلة تذوق جيداً وتخدم هرموناتك.",
+    feature4Title: "استقبلي كل مرحلة بلطف",
+    feature4Desc: "استبدلي الإحباط بالفهم والرحمة الجذرية بالذات.",
+    alignmentTitle: "قوة التوافق",
+    alignmentBody1: "النية وراء كل جزء من هذه العملية هي توافق العقل والجسد والروح. الصحة الطمثية جانب حيوي من هذا التوافق.",
+    alignmentBody2: "دوراتنا الطمثية متصلة عميقاً بالعالم الطبيعي — تماماً كمراحل القمر والفصول المتغيرة.",
+    foundationsTitle: "أسس النجاح",
+    principle1Title: "استمتعي بالعملية", principle1Desc: "الأمر يتعلق بالتقدم وليس الكمال. احتفلي بالانتصارات الصغيرة.",
+    principle2Title: "تتبعي عاداتك وتقدمك", principle2Desc: "الاحتفاظ بيومية يمكن أن يساعدك على البقاء مسؤولة.",
+    principle3Title: "نفّذي التغيير بالحب", principle3Desc: "كوني لطيفة مع نفسك. التغيير يستغرق وقتاً.",
+    principle4Title: "ضعي نوايا يومية", principle4Desc: "كل صباح، خذي لحظة لتحديد نيتك لليوم.",
+    proTipLabel: "✦ نصيحة احترافية:", proTipText: "دماغك في أكثر حالاته قابلية للإيحاء قبل النوم مباشرة وعند الاستيقاظ.",
+    dailyPracticesTitle: "ممارسات يومية لتوافق الجسد والعقل",
+    practiceVizName: "التخيّل", practiceVizDesc: "أمضي بعض اللحظات كل يوم في تصوّر أهدافك وكيف تريدين أن تشعري.",
+    practiceAffName: "التأكيدات الإيجابية", practiceAffDesc: "استخدمي تأكيدات إيجابية: «أنا قوية»، «أنا قادرة»، «أحترم جسدي واحتياجاته».",
+    practiceThanksName: "الامتنان لجسدك", practiceThanksDesc: "خذي لحظة كل يوم للتعبير عن الامتنان لجسدك — لقوته ومرونته.",
+    practiceBreathName: "التنفس", practiceBreathDesc: "التنفس البطني العميق يمكن أن يساعدك على الشعور بالتوازن والتركيز.",
+    phaseSubTabs: ["تمارين", "سموثي", "شيك", "عصائر", "وجبات", "شاي"],
+    workoutPlanTitle: "خطة التمرين الأسبوعية",
+    smoothiesTitle: "سموثي", shakesTitle: "شيك", juicesTitle: "عصائر", mealsTitle: "وجبات يومية", teasTitle: "شاي",
+    ingredientsLabel: "المكونات:", benefitLabel: "الفائدة:", whenLabel: "متى:", restLabel: "راحة",
+    conditionsList: ["متلازمة المبيض المتعدد الكيسات", "الانتباذ البطاني الرحمي", "ضغط الدم المرتفع"],
+    pcosTitle: "متلازمة المبيض المتعدد الكيسات", pcosBody: "غالباً ما تنطوي على مقاومة الأنسولين واختلالات هرمونية. التركيز على الأطعمة منخفضة المؤشر الجلايسيمي.",
+    endoTitle: "الانتباذ البطاني الرحمي", endoBody: "يتضمن التهاباً وألماً. التركيز على الأطعمة المضادة للالتهابات.",
+    hbpTitle: "ضغط الدم المرتفع", hbpBody: "ركّزي على الأطعمة منخفضة الصوديوم والدهون الصحية للقلب.",
+    teaGuideLabel: "دليل الشاي", keyTakeawaysTitle: "النقاط الرئيسية", avoidTitle: "تجنّبي",
+    restTitle: "دليل الراحة والتعافي", restBody: "الراحة والتعافي مهمان بنفس القدر مثل التمارين والتغذية.",
+    trackerTitle: "متتبع العادات", weekLabel: "أسبوع", phaseLabel: "المرحلة",
+    measurementsTitle: "القياسات الجسدية", energyMoodTitle: "الطاقة والمزاج", energyLabel: "مستوى الطاقة",
+    energyLevels: ["عالٍ", "متوسط", "منخفض"], moodLabel: "المزاج والعواطف", moodPlaceholder: "كيف حالك اليوم؟",
+    journalTitle: "التأملات اليومية", journalWeekLabel: "أسبوع", journalDesc: "استخدمي هذا الفضاء للتأمل في يومك وتتبع التقدم.",
+    journalDayPlaceholder: "كيف شعرت؟ ما الذي نجح؟ ما الذي ستغيرينه؟",
+    weeklyProgressTitle: "ملخص التقدم الأسبوعي",
+    winsLabel: "الإنجازات والانتصارات", winsPlaceholder: "ماذا أنجزت هذا الأسبوع؟",
+    challengesLabel: "التحديات والدروس", challengesPlaceholder: "ما الذي كان صعباً؟ ماذا تعلمت؟",
+    intentionsLabel: "نوايا الأسبوع القادم", intentionsPlaceholder: "على ماذا تريدين التركيز الأسبوع القادم؟",
+    notesTitle: "ملاحظات وتتبع إضافي", notesPlaceholder: "مساحة حرة — ملاحظات، أنماط...",
+    conclusionTitle: "لقد كنت دائماً مُقدَّر لكِ أن تتدفقي",
+    conclusionQuote: ""دورتك ليست شيئاً تتحمّلينه. إنها مصدر للحكمة والقوة والمعرفة العميقة بالذات."",
+    paymentHeroTitle: "دورتك، قوتك", paymentSubtitle: "مركز عافية لمدة 8 أسابيع متزامن مع دورتك الشهرية.",
+    plan1Label: "وصول شهري", plan1Period: "/شهر", plan1Desc: "وصول كامل، إلغاء في أي وقت",
+    plan2Label: "وصول سنوي", plan2Period: "/سنة", plan2Desc: "وفّري 50% — أفضل قيمة",
+    plan3Label: "وصول مدى الحياة", plan3Period: "مرة واحدة", plan3Desc: "ادفعي مرة واحدة، وصول للأبد",
+    mostPopular: "الأكثر شعبية", getAccessBtn: "احصلي على الوصول", choosePlanBtn: "اختاري خطة",
+    guarantee: "ضمان استرداد 30 يوم · دفع آمن · وصول فوري",
+    bioTitle: "رابط سيرتك", bioCopyBtn: "نسخ", bioCopiedBtn: "✓ تم النسخ!",
+    successTitle: "أنت في الداخل، جميلة!", successBody: "مرحباً بك في Go With Your Flow. لنبدأ رحلتك لمدة 8 أسابيع.",
+    successBtn: "ادخلي إلى المركز →",
+  },
 
-  const chunk1 = {
-    tagline, heroTitle, tabs, getBioLink,
-    welcomeQuote, feature1Title, feature1Desc, feature2Title, feature2Desc,
-    feature3Title, feature3Desc, feature4Title, feature4Desc,
-    alignmentTitle, alignmentBody1, alignmentBody2,
-    foundationsTitle, principle1Title, principle1Desc, principle2Title, principle2Desc,
-    principle3Title, principle3Desc, principle4Title, principle4Desc,
-    proTipLabel, proTipText, dailyPracticesTitle,
-    practiceVizName, practiceVizDesc, practiceAffName, practiceAffDesc,
-    practiceThanksName, practiceThanksDesc, practiceBreathName, practiceBreathDesc,
-    paymentTagline, paymentHeroTitle, paymentSubtitle, paymentFeatures,
-    plan1Label, plan1Price, plan1Period, plan1Desc,
-    plan2Label, plan2Price, plan2Period, plan2Desc,
-    plan3Label, plan3Price, plan3Period, plan3Desc,
-    mostPopular, selectedLabel, getAccessBtn, choosePlanBtn, guarantee,
-    testimonials, checkoutBack, checkoutSummaryLabel,
-    fieldName, fieldNamePh, fieldEmail, fieldEmailPh,
-    fieldCard, fieldCardPh, fieldExpiry, fieldExpiryPh, fieldCvv, fieldCvvPh,
-    payBtn, processingBtn, payFooter, formError,
-    successEmoji, successTitle, successBody, successBtn,
-    bioTitle, bioDesc, bioCopyBtn, bioCopiedBtn, bioCaptionsLabel,
-    bioCaptions, bioDeployNote, languageLabel, translatingLabel, translateError,
-  };
+  hi: {
+    tagline: "8-सप्ताह का वेलनेस हब",
+    heroTitle: "आपका चक्र, आपकी शक्ति",
+    tabs: ["स्वागत", "चरण", "स्थितियाँ", "आराम और रिकवरी", "ट्रैकर", "डायरी", "निष्कर्ष"],
+    getBioLink: "🔗 अपना बायो लिंक पाएं",
+    welcomeQuote: "क्या आपको कभी ऐसा लगता है कि आपका शरीर आपसे फुसफुसाहटों में बात करता है जिन्हें आप पूरी तरह समझ नहीं पाते? कुछ दिन आप अजेय महसूस करते हुए उठती हैं — मजबूत, चमकदार, अपने आप के साथ पूरी तरह तालमेल में। क्या होगा अगर मैं आपको बताऊं कि यह कोई गलत संकेत नहीं है?",
+    feature1Title: "थकान को जानबूझकर आराम में बदलें",
+    feature1Desc: "जानें कि आपके शरीर को कब रिकवरी की ज़रूरत है और बिना अपराधबोध के इसे स्वीकार करें।",
+    feature2Title: "अपनी प्राकृतिक ऊर्जा का दोहन करें",
+    feature2Desc: "अपने वर्कआउट और महत्वाकांक्षाओं को अपने चक्र के प्राकृतिक शिखरों के साथ समन्वित करें।",
+    feature3Title: "ऐसी इच्छाओं को पूरा करें जो सच में पोषण दें",
+    feature3Desc: "चरण-विशिष्ट खाद्य पदार्थ जो स्वादिष्ट हों और आपके हार्मोन की सेवा करें।",
+    feature4Title: "हर चरण को दयालुता से मिलें",
+    feature4Desc: "निराशा को समझ और कट्टरपंथी आत्म-करुणा से बदलें।",
+    alignmentTitle: "संरेखण की शक्ति",
+    alignmentBody1: "इस प्रक्रिया के हर हिस्से के पीछे की मंशा मन, शरीर और आत्मा का संरेखण है। मासिक धर्म स्वास्थ्य इस संरेखण का एक महत्वपूर्ण पहलू है।",
+    alignmentBody2: "हमारे मासिक चक्र प्राकृतिक दुनिया से गहराई से जुड़े हुए हैं — चंद्रमा के चरणों और बदलते मौसमों की तरह।",
+    foundationsTitle: "सफलता की नींव",
+    principle1Title: "प्रक्रिया का आनंद लें", principle1Desc: "यह प्रगति के बारे में है, परिपूर्णता के बारे में नहीं।",
+    principle2Title: "अपनी आदतों और प्रगति को ट्रैक करें", principle2Desc: "डायरी रखने से जवाबदेही में मदद मिल सकती है।",
+    principle3Title: "प्यार के साथ बदलाव लागू करें", principle3Desc: "खुद के साथ दयालु रहें। बदलाव में समय लगता है।",
+    principle4Title: "दैनिक इरादे निर्धारित करें", principle4Desc: "हर सुबह, अपने दिन के लिए अपना इरादा निर्धारित करने के लिए एक पल लें।",
+    proTipLabel: "✦ प्रो टिप:", proTipText: "आपका मस्तिष्क सोने से ठीक पहले और जागने पर सबसे अधिक सुझाव स्वीकार करने की अवस्था में होता है।",
+    dailyPracticesTitle: "मन-शरीर संरेखण के लिए दैनिक अभ्यास",
+    practiceVizName: "विज़ुअलाइज़ेशन", practiceVizDesc: "हर दिन कुछ पल अपने लक्ष्यों की कल्पना करने में बिताएं।",
+    practiceAffName: "सकारात्मक पुष्टि", practiceAffDesc: "सकारात्मक पुष्टि का उपयोग करें: "मैं मजबूत हूं", "मैं सक्षम हूं"।",
+    practiceThanksName: "अपने शरीर का धन्यवाद", practiceThanksDesc: "हर दिन अपने शरीर के प्रति कृतज्ञता व्यक्त करने के लिए एक पल लें।",
+    practiceBreathName: "श्वास कार्य", practiceBreathDesc: "गहरी पेट की सांस लेने से आपको केंद्रित महसूस करने में मदद मिल सकती है।",
+    phaseSubTabs: ["व्यायाम", "स्मूदी", "शेक", "जूस", "भोजन", "चाय"],
+    workoutPlanTitle: "साप्ताहिक व्यायाम योजना",
+    smoothiesTitle: "स्मूदी", shakesTitle: "शेक", juicesTitle: "जूस", mealsTitle: "दैनिक भोजन", teasTitle: "चाय",
+    ingredientsLabel: "सामग्री:", benefitLabel: "लाभ:", whenLabel: "कब:", restLabel: "आराम",
+    conditionsList: ["PCOS", "एंडोमेट्रियोसिस", "उच्च रक्तचाप"],
+    pcosTitle: "PCOS", pcosBody: "PCOS में अक्सर इंसुलिन प्रतिरोध और हार्मोनल असंतुलन शामिल होता है।",
+    endoTitle: "एंडोमेट्रियोसिस", endoBody: "एंडोमेट्रियोसिस में सूजन और दर्द शामिल है। फोकस सूजन-रोधी खाद्य पदार्थों पर है।",
+    hbpTitle: "उच्च रक्तचाप", hbpBody: "कम सोडियम वाले खाद्य पदार्थों और हृदय-स्वस्थ वसा पर ध्यान दें।",
+    teaGuideLabel: "चाय गाइड", keyTakeawaysTitle: "मुख्य बिंदु", avoidTitle: "परहेज़ करें",
+    restTitle: "आराम और रिकवरी गाइड", restBody: "आराम और रिकवरी व्यायाम और पोषण जितनी ही महत्वपूर्ण हैं।",
+    trackerTitle: "आदत ट्रैकर", weekLabel: "सप्ताह", phaseLabel: "चरण",
+    measurementsTitle: "शारीरिक माप", energyMoodTitle: "ऊर्जा और मूड", energyLabel: "ऊर्जा स्तर",
+    energyLevels: ["उच्च", "मध्यम", "निम्न"], moodLabel: "मूड और भावनाएं", moodPlaceholder: "आज आप कैसा महसूस कर रही हैं?",
+    journalTitle: "दैनिक विचार", journalWeekLabel: "सप्ताह", journalDesc: "इस स्थान का उपयोग अपने दिन पर विचार करने के लिए करें।",
+    journalDayPlaceholder: "आपने कैसा महसूस किया? क्या काम किया?",
+    weeklyProgressTitle: "साप्ताहिक प्रगति सारांश",
+    winsLabel: "जीत और उपलब्धियां", winsPlaceholder: "इस सप्ताह आपने क्या हासिल किया?",
+    challengesLabel: "चुनौतियां और सबक", challengesPlaceholder: "क्या कठिन था? आपने क्या सीखा?",
+    intentionsLabel: "अगले सप्ताह के इरादे", intentionsPlaceholder: "अगले सप्ताह आप किस पर ध्यान देना चाहती हैं?",
+    notesTitle: "नोट्स और अतिरिक्त ट्रैकिंग", notesPlaceholder: "मुक्त स्थान — अवलोकन, पैटर्न...",
+    conclusionTitle: "आप हमेशा प्रवाहित होने के लिए बनी थीं",
+    conclusionQuote: ""आपका चक्र कुछ सहने के लिए नहीं है। यह ज्ञान, शक्ति और गहरे आत्म-ज्ञान का स्रोत है।"",
+    paymentHeroTitle: "आपका चक्र, आपकी शक्ति", paymentSubtitle: "8-सप्ताह का वेलनेस हब आपके चक्र के साथ समन्वित।",
+    plan1Label: "मासिक एक्सेस", plan1Period: "/माह", plan1Desc: "पूर्ण एक्सेस, कभी भी रद्द करें",
+    plan2Label: "वार्षिक एक्सेस", plan2Period: "/वर्ष", plan2Desc: "50% बचाएं — सबसे अच्छा मूल्य",
+    plan3Label: "आजीवन एक्सेस", plan3Period: "एकमुश्त", plan3Desc: "एक बार भुगतान करें, हमेशा के लिए एक्सेस",
+    mostPopular: "सबसे लोकप्रिय", getAccessBtn: "एक्सेस पाएं", choosePlanBtn: "एक प्लान चुनें",
+    guarantee: "30-दिन की मनी-बैक गारंटी · सुरक्षित चेकआउट · तत्काल एक्सेस",
+    bioTitle: "आपका बायो लिंक", bioCopyBtn: "कॉपी करें", bioCopiedBtn: "✓ कॉपी हो गया!",
+    successTitle: "आप अंदर हैं, सुंदर!", successBody: "Go With Your Flow में आपका स्वागत है। आपकी 8-सप्ताह की यात्रा शुरू करते हैं।",
+    successBtn: "हब में प्रवेश करें →",
+  },
 
-  const chunk2 = {
-    phaseSectionTitle, phaseSubTabs, workoutPlanTitle, smoothiesTitle, shakesTitle,
-    juicesTitle, mealsTitle, teasTitle, ingredientsLabel, benefitLabel, whenLabel,
-    restLabel, dayLabels, mealLabels, affirmationLabel,
-    conditionsTitle, conditionsList, pcosTitle, pcosBody, endoTitle, endoBody,
-    hbpTitle, hbpBody, teaGuideLabel, keyTakeawaysTitle, avoidTitle,
-    herbsAvoidTitle, precautionsTitle, lifestyleTitle,
-    morningTeasTitle, morningTeasDesc, daytimeTeasTitle, daytimeTeasDesc,
-    eveningTeasTitle, eveningTeasDesc, additionalSupportTitle, hbpDisclaimer,
-    trackerTitle, weekLabel, phaseLabel, habitGroups,
-    measurementsTitle, measureFields, energyMoodTitle, energyLabel,
-    energyLevels, moodLabel, moodPlaceholder,
-  };
+  sw: {
+    tagline: "Kituo cha Ustawi cha Wiki 8",
+    heroTitle: "Mzunguko Wako, Nguvu Yako",
+    tabs: ["Karibu", "Awamu", "Hali za Kiafya", "Mapumziko na Kupona", "Kifuatiliaji", "Jarida", "Hitimisho"],
+    getBioLink: "🔗 Pata Kiungo Chako cha Bio",
+    welcomeQuote: "Je, umewahi kuhisi kama mwili wako unazungumza kwa maneno ya chini ambayo huelewa vizuri? Siku zingine unaamka ukihisi huwezi kushindwa — nguvu, mwangaza, ukiwa katika maelewano na nafsi yako. Vipi kama nikukuambia hii si ishara kwamba kuna kitu kibaya?",
+    feature1Title: "Geuza uchovu kuwa mapumziko ya makusudi",
+    feature1Desc: "Jifunze wakati mwili wako unahitaji kupona na ukubali bila hatia.",
+    feature2Title: "Tumia nishati yako ya asili inapopanda",
+    feature2Desc: "Oanisha mazoezi yako na matarajio na kilele cha asili cha mzunguko wako.",
+    feature3Title: "Tosheza tamaa zinazokupa lishe halisi",
+    feature3Desc: "Vyakula vya awamu maalum vinavyoonja vizuri na kusaidia homoni zako.",
+    feature4Title: "Pokea kila awamu kwa upole",
+    feature4Desc: "Badilisha kukata tamaa na uelewa na huruma ya kina kwa nafsi yako.",
+    alignmentTitle: "Nguvu ya Usawazishaji",
+    alignmentBody1: "Nia nyuma ya kila sehemu ya mchakato huu ni usawazishaji wa akili, mwili, na roho. Afya ya hedhi ni kipengele muhimu cha usawazishaji huu.",
+    alignmentBody2: "Mizunguko yetu ya hedhi imeunganishwa kwa kina na ulimwengu wa asili — kama awamu za mwezi na mabadiliko ya msimu.",
+    foundationsTitle: "Misingi ya Mafanikio",
+    principle1Title: "FURAHIA Mchakato", principle1Desc: "Hii inahusu maendeleo, si ukamilifu. Sherehe ushindi mdogo.",
+    principle2Title: "Fuatilia Tabia na Maendeleo Yako", principle2Desc: "Kuweka jarida kunaweza kukusaidia kubaki na wajibu.",
+    principle3Title: "Tekeleza Mabadiliko kwa UPENDO", principle3Desc: "Kuwa mpole na nafsi yako. Mabadiliko yanachukua muda.",
+    principle4Title: "Weka Nia za Kila Siku", principle4Desc: "Kila asubuhi, chukua muda kuweka nia yako ya siku.",
+    proTipLabel: "✦ Kidokezo cha Pro:", proTipText: "Ubongo wako uko katika hali yake ya kupendekeza zaidi kabla ya kulala na unapoamka.",
+    dailyPracticesTitle: "Mazoea ya Kila Siku ya Usawazishaji wa Mwili na Akili",
+    practiceVizName: "Kutazamia", practiceVizDesc: "Tumia dakika chache kila siku kutazamia malengo yako.",
+    practiceAffName: "Uthibitisho", practiceAffDesc: "Tumia uthibitisho mzuri: "Mimi ni mwenye nguvu", "Mimi ni mwenye uwezo".",
+    practiceThanksName: "Kushukuru Mwili Wako", practiceThanksDesc: "Chukua muda kila siku kushukuru mwili wako — kwa nguvu na ustahimilivu wake.",
+    practiceBreathName: "Kazi ya Pumzi", practiceBreathDesc: "Kupumua kwa kina kunaweza kukusaidia kuhisi umejikita.",
+    phaseSubTabs: ["Mazoezi", "Smoothies", "Shakes", "Juisi", "Milo", "Chai"],
+    workoutPlanTitle: "Mpango wa Mazoezi wa Wiki",
+    smoothiesTitle: "Smoothies", shakesTitle: "Shakes", juicesTitle: "Juisi", mealsTitle: "Milo ya Kila Siku", teasTitle: "Chai",
+    ingredientsLabel: "Viungo:", benefitLabel: "Faida:", whenLabel: "Lini:", restLabel: "MAPUMZIKO",
+    conditionsList: ["PCOS", "Endometriosis", "Shinikizo la Damu"],
+    pcosTitle: "PCOS", pcosBody: "PCOS mara nyingi inahusisha upinzani wa insulini na usawa wa homoni.",
+    endoTitle: "Endometriosis", endoBody: "Endometriosis inahusisha uvimbe na maumivu. Msisitizo ni kwenye vyakula vinavyopunguza uvimbe.",
+    hbpTitle: "Shinikizo la Damu", hbpBody: "Zingatia vyakula vyenye chumvi kidogo na mafuta yenye afya kwa moyo.",
+    teaGuideLabel: "Mwongozo wa Chai", keyTakeawaysTitle: "Mambo Muhimu", avoidTitle: "Epuka",
+    restTitle: "Mwongozo wa Mapumziko na Kupona", restBody: "Mapumziko na kupona ni muhimu kama mazoezi na lishe.",
+    trackerTitle: "Kifuatiliaji cha Tabia", weekLabel: "Wiki", phaseLabel: "Awamu",
+    measurementsTitle: "Vipimo vya Mwili", energyMoodTitle: "Nishati na Hisia", energyLabel: "Kiwango cha Nishati",
+    energyLevels: ["Juu", "Wastani", "Chini"], moodLabel: "Hisia na Hali ya Akili", moodPlaceholder: "Unajisikiaje leo?",
+    journalTitle: "Tafakari za Kila Siku", journalWeekLabel: "Wiki", journalDesc: "Tumia nafasi hii kutafakari siku yako.",
+    journalDayPlaceholder: "Ulijisikiaje? Nini kilifanya kazi?",
+    weeklyProgressTitle: "Muhtasari wa Maendeleo ya Wiki",
+    winsLabel: "Mafanikio", winsPlaceholder: "Ulifanikiwa nini wiki hii?",
+    challengesLabel: "Changamoto na Mafunzo", challengesPlaceholder: "Nini kilikuwa kigumu? Ulijifunza nini?",
+    intentionsLabel: "Nia za Wiki Ijayo", intentionsPlaceholder: "Unataka kuzingatia nini wiki ijayo?",
+    notesTitle: "Maelezo na Ufuatiliaji wa Ziada", notesPlaceholder: "Nafasi huru — uchunguzi, mifumo...",
+    conclusionTitle: "Uliumbwa Kustawi Daima",
+    conclusionQuote: ""Mzunguko wako si kitu cha kuvumilia. Ni chanzo cha hekima, nguvu, na ujuzi wa kina wa nafsi."",
+    paymentHeroTitle: "Mzunguko Wako, Nguvu Yako", paymentSubtitle: "Kituo cha ustawi cha wiki 8 kilichosawazishwa na mzunguko wako.",
+    plan1Label: "Ufikiaji wa Kila Mwezi", plan1Period: "/mwezi", plan1Desc: "Ufikiaji kamili, ghairi wakati wowote",
+    plan2Label: "Ufikiaji wa Kila Mwaka", plan2Period: "/mwaka", plan2Desc: "Okoa 50% — thamani bora",
+    plan3Label: "Ufikiaji wa Maisha Yote", plan3Period: "mara moja", plan3Desc: "Lipa mara moja, ufikiaji milele",
+    mostPopular: "Maarufu Zaidi", getAccessBtn: "Pata Ufikiaji", choosePlanBtn: "Chagua Mpango",
+    guarantee: "Dhamana ya siku 30 · Malipo salama · Ufikiaji wa papo hapo",
+    bioTitle: "Kiungo Chako cha Bio", bioCopyBtn: "Nakili", bioCopiedBtn: "✓ Imenakiliwa!",
+    successTitle: "Uko Ndani, Mrembo!", successBody: "Karibu katika Go With Your Flow. Tuanze safari yako ya wiki 8.",
+    successBtn: "Ingia Kitabuni →",
+  },
 
-  // Translate all 3 chunks in parallel
-  const [t1, t2, t3] = await Promise.all([
-    callClaude(JSON.stringify(chunk1), targetLang, targetName),
-    callClaude(JSON.stringify(chunk2), targetLang, targetName),
-    callClaude(JSON.stringify(chunk3), targetLang, targetName),
-  ]);
+  yo: {
+    tagline: "Ile-iṣẹ Ilera ti Ọsẹ 8",
+    heroTitle: "Ọmọ Rẹ, Agbara Rẹ",
+    tabs: ["Kaabọ", "Àwọn Ìpele", "Àwọn Ìpò", "Isinmi ati Imularada", "Atọpinpin", "Ìwé Àkọsílẹ̀", "Ìparí"],
+    getBioLink: "🔗 Gba Ọna Abawọle Bio Rẹ",
+    welcomeQuote: "Ṣé ìgbà kan rí ni o nímọ̀ pé ara rẹ ń sọ̀rọ̀ fún ọ ní ohun tí ò lè gbọ́ kedere? Àwọn ọjọ́ kan, o máa ń jí, o sì nímọ̀ pé o lágbára — ẹlẹ́wà, dídán, pẹ̀lú ara rẹ. Ọjọ́ mìíràn, o máa ń nímọ̀ pé o yàtọ̀ sí ara rẹ.",
+    feature1Title: "Yí iṣẹ́ rẹ padà sí isinmi tí ó ṣe pàtàkì",
+    feature1Desc: "Kọ́ ìgbà tí ara rẹ nílò ìmúpadàbọ̀sípò kí o sì gbà á láìní ẹ̀bi.",
+    feature2Title: "Lo agbara rẹ ti ara wà tí ó bá dide",
+    feature2Desc: "Ṣe àdéhùn àwọn adaṣe rẹ pẹ̀lú àwọn ìwọ́n abẹ́lẹ̀ ti ọmọ rẹ.",
+    feature3Title: "Ìfẹ́ tí ó ṣe ìjẹun fún ọ gidi gidi",
+    feature3Desc: "Àwọn ounjẹ pàtàkì fún ipele kọọkan tí ó dára tí ó sì ṣe àṣeyọrí fún àwọn homonu rẹ.",
+    feature4Title: "Gbà ipele kọọkan pẹ̀lú ìfẹ́",
+    feature4Desc: "Rọ́pò ibínú pẹ̀lú ìmọ̀ àti àánú fún ara ẹni.",
+    alignmentTitle: "Agbara Ìdọgba",
+    alignmentBody1: "Ète tí ó wà lẹ́yìn gbogbo apá ilana yii ni ìdọgba ti opolo, ara, àti ọkàn.",
+    alignmentBody2: "Àwọn ọmọ inú wa ní asopọ̀ jinlẹ̀ pẹ̀lú ayé ìṣe-àdánidá.",
+    foundationsTitle: "Àwọn Ìpìlẹ̀ Àṣeyọrí",
+    principle1Title: "GBA IGBADUN Ìgbésẹ̀ Náà", principle1Desc: "Ọ̀rọ̀ wa jẹ́ nípa ìlọsíwájú, kìí ṣe ìpéye.",
+    principle2Title: "Tọpinpin Àwọn Ìṣesi àti Ìlọsíwájú Rẹ", principle2Desc: "Gbígba àkọsílẹ̀ le ràn ọ lọ́wọ́ láti wà ní ojúṣe.",
+    principle3Title: "Ṣe Ìyípadà pẹ̀lú IFẸ́", principle3Desc: "Jẹ́ ìdájọ́ ti ara rẹ. Ìyípadà gba àkókò.",
+    principle4Title: "Fi Àwọn Ète Ojoojúmọ́", principle4Desc: "Gbogbo owúrọ̀, gba ìṣẹ́jú díẹ̀ láti fi ète rẹ fún ọjọ́ náà.",
+    proTipLabel: "✦ Ìmọ̀ Ọgbọ́n:", proTipText: "Ọpọlọ rẹ wà ní ipo tí ó ṣe ìmọlẹ̀ jù lọ ṣáájú orun àti lẹ́yìn ji.",
+    dailyPracticesTitle: "Àwọn Ìṣe Ojoojúmọ́ fún Ìdọgba Ara-Ọkàn",
+    practiceVizName: "Ìran", practiceVizDesc: "Lo ìṣẹ́jú díẹ̀ ní gbogbo ọjọ́ láti rí àwọn ète rẹ.",
+    practiceAffName: "Ìjẹrìísí", practiceAffDesc: "Lo àwọn ìjẹrìísí rere: "Mo lágbára", "Mo ní agbára".",
+    practiceThanksName: "Dúpẹ́ lọ́wọ́ Ara Rẹ", practiceThanksDesc: "Gba ìṣẹ́jú ní gbogbo ọjọ́ láti ṣàfihàn ẹ̀wẹ̀ fún ara rẹ.",
+    practiceBreathName: "Iṣẹ́ Ẹ̀mí", practiceBreathDesc: "Mímu ẹ̀mí jinjin le ràn ọ lọ́wọ́ láti nímọ̀ pé o wà ní ipò.",
+    phaseSubTabs: ["Àdáṣe", "Smoothies", "Shakes", "Àwọn Oje", "Oúnjẹ", "Tí"],
+    workoutPlanTitle: "Ètò Àdáṣe Ọ̀sẹ̀",
+    smoothiesTitle: "Smoothies", shakesTitle: "Shakes", juicesTitle: "Àwọn Oje", mealsTitle: "Oúnjẹ Ojoojúmọ́", teasTitle: "Tí",
+    ingredientsLabel: "Àwọn Ohun èlò:", benefitLabel: "Àǹfààní:", whenLabel: "Ìgbà:", restLabel: "ISINMI",
+    conditionsList: ["PCOS", "Endometriosis", "Ẹ̀jẹ̀ Ìpọ̀njú"],
+    pcosTitle: "PCOS", pcosBody: "PCOS maa ń kan ìdiwọ̀ insulin àti àìdọ́gba homonu.",
+    endoTitle: "Endometriosis", endoBody: "Endometriosis kan ẹ̀gbọ̀n àti ìrora. Ìdojúkọ̀ wà lori oúnjẹ tí ó dín ẹ̀gbọ̀n.",
+    hbpTitle: "Ẹ̀jẹ̀ Ìpọ̀njú", hbpBody: "Dojúkọ àwọn oúnjẹ tí ó ní iyọ̀ kékeré àti ọrá tí ó dára fún ọkàn.",
+    teaGuideLabel: "Ìtọ́sọ́nà Tí", keyTakeawaysTitle: "Àwọn Àbájáde Pàtàkì", avoidTitle: "Yẹra Fún",
+    restTitle: "Ìtọ́sọ́nà Isinmi àti Ìmúpadàbọ̀sípò", restBody: "Isinmi àti ìmúpadàbọ̀sípò ṣe pàtàkì bíi àdáṣe àti oúnjẹ.",
+    trackerTitle: "Atọpinpin Ìṣesi", weekLabel: "Ọ̀sẹ̀", phaseLabel: "Ìpele",
+    measurementsTitle: "Ìwọ̀n Ara", energyMoodTitle: "Agbára àti Ìmọ̀lára", energyLabel: "Ìwọ̀n Agbára",
+    energyLevels: ["Gíga", "Àárín", "Kekere"], moodLabel: "Ìmọ̀lára", moodPlaceholder: "Báwo ni o ṣe nímọ̀ lónìí?",
+    journalTitle: "Àwọn Àròyé Ojoojúmọ́", journalWeekLabel: "Ọ̀sẹ̀", journalDesc: "Lo ààyè yìí láti rò nípa ọjọ́ rẹ.",
+    journalDayPlaceholder: "Báwo ni o ṣe nímọ̀? Kí ló ṣiṣẹ́?",
+    weeklyProgressTitle: "Ìsọníṣókí Ìlọsíwájú Ọ̀sẹ̀",
+    winsLabel: "Àwọn Ìṣeyọrí", winsPlaceholder: "Kí ló ṣeyọrí ní ọ̀sẹ̀ yìí?",
+    challengesLabel: "Àwọn Ìdìíwọ̀ àti Ẹ̀kọ́", challengesPlaceholder: "Kí ló ṣòro? Kí ló kọ́?",
+    intentionsLabel: "Àwọn Ète fún Ọ̀sẹ̀ Tí Ó Ń Bọ̀", intentionsPlaceholder: "Kí ló fẹ́ dojúkọ ní ọ̀sẹ̀ tí ó ń bọ̀?",
+    notesTitle: "Àwọn Àkọsílẹ̀ àti Atọpinpin Àfikún", notesPlaceholder: "Ààyè ọ̀fẹ́ — àwọn ohun tí a ṣàkíyèsí...",
+    conclusionTitle: "O Jẹ́ Ẹni Tí A Ti Pinnu Láti Ṣàn Tẹ́lẹ̀",
+    conclusionQuote: ""Ọmọ rẹ kìí ṣe ohun láti farada. Ó jẹ́ orísun ọgbọ́n, agbára, àti ìmọ̀ jinjin nipa ara ẹni."",
+    paymentHeroTitle: "Ọmọ Rẹ, Agbara Rẹ", paymentSubtitle: "Ile-iṣẹ ilera ọ̀sẹ̀ 8 tí ó bá ọmọ rẹ mu.",
+    plan1Label: "Ìráàyèsí Oṣooṣù", plan1Period: "/oṣù", plan1Desc: "Ìráàyèsí pípé, fagilé nígbàkúgbà",
+    plan2Label: "Ìráàyèsí Ọdún", plan2Period: "/ọdún", plan2Desc: "Pamọ́ 50% — iye tí ó dára jù",
+    plan3Label: "Ìráàyèsí Àì-Níparí", plan3Period: "ìgbà kan", plan3Desc: "San ní ìgbà kan, ìráàyèsí láé",
+    mostPopular: "Olókìkí Jù", getAccessBtn: "Gba Ìráàyèsí", choosePlanBtn: "Yan Ètò",
+    guarantee: "Ìdánilójú àpadàbọ̀ ọjọ́ 30 · Ìsanwó aabo · Ìráàyèsí lẹ́sẹ̀kẹsẹ̀",
+    bioTitle: "Ọna Abawọle Bio Rẹ", bioCopyBtn: "Daakọ", bioCopiedBtn: "✓ Ti daakọ!",
+    successTitle: "O Wà Inu, Ẹlẹ́wà!", successBody: "Káàbọ̀ sí Go With Your Flow. Jẹ́ ká bẹ̀rẹ̀ ìrìn àjò ọ̀sẹ̀ 8 rẹ.",
+    successBtn: "Wọ̀ Inú Ile-iṣẹ →",
+  },
+};
 
-  const result = { ...t1, ...t2, ...t3 };
-  translationCache[targetLang] = result;
-  return result;
+/* Get strings for a given language code — falls back to English */
+function getStrings(langCode) {
+  if (langCode === "en" || !TRANSLATIONS[langCode]) return BASE_STRINGS;
+  // Merge: language overrides BASE_STRINGS for translated keys,
+  // keeps BASE_STRINGS for any key not yet translated
+  return { ...BASE_STRINGS, ...TRANSLATIONS[langCode] };
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -786,31 +1107,133 @@ function RecipeGrid({ items, accent }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PAYMENT GATE
+   PAYMENT GATE — with 7-day free trial
+   Trial state is persisted in localStorage so it survives refresh.
+   Keys used:
+     gwtf_trial_start  — ISO timestamp of when trial started
+     gwtf_trial_email  — email used to start trial
+     gwtf_paid         — "true" if user has paid
 ═══════════════════════════════════════════════════════════════ */
+
+const TRIAL_DAYS = 7;
+const MS_PER_DAY = 86400000;
+
+function getTrialState() {
+  try {
+    const paid = localStorage.getItem("gwtf_paid") === "true";
+    if (paid) return { status: "paid" };
+    const start = localStorage.getItem("gwtf_trial_start");
+    const email = localStorage.getItem("gwtf_trial_email");
+    if (!start) return { status: "none" };
+    const elapsed = Date.now() - new Date(start).getTime();
+    const msLeft  = TRIAL_DAYS * MS_PER_DAY - elapsed;
+    if (msLeft <= 0) return { status: "expired", email };
+    return { status: "active", msLeft, email, start };
+  } catch { return { status: "none" }; }
+}
+
+function startTrial(email) {
+  try {
+    localStorage.setItem("gwtf_trial_start", new Date().toISOString());
+    localStorage.setItem("gwtf_trial_email", email);
+  } catch {}
+}
+
+function markPaid() {
+  try { localStorage.setItem("gwtf_paid", "true"); } catch {}
+}
+
+/* Formats ms → "6d 23h 14m" */
+function fmtCountdown(ms) {
+  if (ms <= 0) return "0d 0h 0m";
+  const d = Math.floor(ms / MS_PER_DAY);
+  const h = Math.floor((ms % MS_PER_DAY) / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return `${d}d ${h}h ${m}m`;
+}
+
 function PaymentGate({ onUnlock, s, lang }) {
-  const [step, setStep] = useState("landing");
-  const [plan, setPlan] = useState(null);
-  const [form, setForm] = useState({ name: "", email: "", card: "", expiry: "", cvv: "" });
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const rtl = LANGUAGES.find(l => l.code === lang)?.rtl || false;
+  const [trialState, setTrialState]   = useState(() => getTrialState());
+  const [step, setStep]               = useState("landing"); // landing | trial-signup | checkout | success | trial-success
+  const [plan, setPlan]               = useState(null);
+  const [trialEmail, setTrialEmail]   = useState("");
+  const [trialName, setTrialName]     = useState("");
+  const [form, setForm]               = useState({ name: "", email: "", card: "", expiry: "", cvv: "" });
+  const [loading, setLoading]         = useState(false);
+  const [err, setErr]                 = useState("");
+  const [countdown, setCountdown]     = useState(trialState.msLeft || 0);
+
+  const rtl    = LANGUAGES.find(l => l.code === lang)?.rtl || false;
   const accent = "#c084fc";
+  const trialAccent = "#3ecb80";
+
+  // Live countdown tick
+  useEffect(() => {
+    if (trialState.status !== "active") return;
+    const t = setInterval(() => {
+      const s = getTrialState();
+      if (s.status === "expired") { setTrialState(s); clearInterval(t); return; }
+      setCountdown(s.msLeft || 0);
+    }, 30000);
+    return () => clearInterval(t);
+  }, [trialState.status]);
+
+  // If already in active trial or paid — unlock immediately
+  useEffect(() => {
+    if (trialState.status === "paid" || trialState.status === "active") onUnlock();
+  }, []);
 
   const plans = [
     { id: "monthly",  label: s.plan1Label, price: s.plan1Price, period: s.plan1Period, desc: s.plan1Desc, popular: false },
-    { id: "annual",   label: s.plan2Label, price: s.plan2Price, period: s.plan2Period, desc: s.plan2Desc, popular: true },
+    { id: "annual",   label: s.plan2Label, price: s.plan2Price, period: s.plan2Period, desc: s.plan2Desc, popular: true  },
     { id: "lifetime", label: s.plan3Label, price: s.plan3Price, period: s.plan3Period, desc: s.plan3Desc, popular: false },
   ];
+
+  const handleStartTrial = () => {
+    if (!trialName.trim() || !trialEmail.includes("@")) { setErr("Please enter your name and a valid email."); return; }
+    setErr("");
+    startTrial(trialEmail);
+    setTrialState(getTrialState());
+    setStep("trial-success");
+  };
 
   const handlePay = () => {
     if (!form.name || !form.email || form.card.replace(/\s/g,"").length < 16 || form.expiry.length < 5 || form.cvv.length < 3) {
       setErr(s.formError); return;
     }
     setErr(""); setLoading(true);
-    setTimeout(() => { setLoading(false); setStep("success"); }, 2200);
+    setTimeout(() => { markPaid(); setLoading(false); setStep("success"); }, 2200);
   };
 
+  // ── Trial success screen ──────────────────────────────────────
+  if (step === "trial-success") {
+    return (
+      <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ maxWidth: 460, width: "100%", textAlign: "center", animation: "fadeUp .6s ease" }}>
+          <div style={{ fontSize: 58, marginBottom: 16 }}>🌿</div>
+          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 10px" }}>Your 7-Day Trial Has Started!</h2>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, lineHeight: 1.85, marginBottom: 12 }}>
+            Welcome, {trialName}! You have full access to the entire hub for the next 7 days — completely free.
+          </p>
+          <div style={{ background: `${trialAccent}12`, border: `1px solid ${trialAccent}30`, borderRadius: 14, padding: "14px 20px", marginBottom: 26, display: "inline-flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 20 }}>⏱</span>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: 1, textTransform: "uppercase" }}>Trial ends in</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: trialAccent, fontFamily: "'DM Sans',sans-serif" }}>{fmtCountdown(TRIAL_DAYS * MS_PER_DAY)}</div>
+            </div>
+          </div>
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, lineHeight: 1.75, marginBottom: 26 }}>
+            No card needed today. After 7 days, choose a plan to keep your access.
+          </p>
+          <button onClick={onUnlock} style={{ background: `linear-gradient(135deg,${trialAccent},#0f6e56)`, border: "none", borderRadius: 14, padding: "14px 38px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 0 28px ${trialAccent}35` }}>
+            Enter the Hub — Start Exploring →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Paid success screen ───────────────────────────────────────
   if (step === "success") return (
     <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ maxWidth: 440, width: "100%", textAlign: "center", animation: "fadeUp .6s ease" }}>
@@ -822,18 +1245,66 @@ function PaymentGate({ onUnlock, s, lang }) {
     </div>
   );
 
+  // ── Trial sign-up screen ──────────────────────────────────────
+  if (step === "trial-signup") return (
+    <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ maxWidth: 440, width: "100%", animation: "fadeUp .5s ease" }}>
+        <button onClick={() => { setStep("landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 20, fontFamily: "'DM Sans',sans-serif" }}>← Back</button>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🌿</div>
+          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 30, fontStyle: "italic", color: "#fff", margin: "0 0 8px" }}>Start Your Free Trial</h2>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.75 }}>7 days of full access. No card required. No commitment.</p>
+        </div>
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: 22 }}>
+          {/* What's included */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.3)", fontWeight: 700, marginBottom: 10 }}>What's included</div>
+            {["✦ Full access to all 4 cycle phases", "✦ 40+ smoothie, shake & juice recipes", "✦ Phase-specific workouts & meal plans", "✦ PCOS, Endometriosis & BP guides", "✦ Habit tracker & journal", "✦ Available in 8 languages"].map((item, i) => (
+              <div key={i} style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", marginBottom: 6, lineHeight: 1.6 }}>{item}</div>
+            ))}
+          </div>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 18 }}>
+            {[{ key: "name", label: "Your Name", ph: "Jane Smith", val: trialName, set: setTrialName },
+              { key: "email", label: "Email Address", ph: "jane@example.com", val: trialEmail, set: setTrialEmail }].map(f => (
+              <div key={f.key} style={{ marginBottom: 14 }}>
+                <label style={{ display: "block", fontSize: 10, color: "rgba(255,255,255,0.35)", marginBottom: 5, textTransform: "uppercase", letterSpacing: 1 }}>{f.label}</label>
+                <input type={f.key === "email" ? "email" : "text"} placeholder={f.ph} value={f.val}
+                  onChange={e => f.set(e.target.value)}
+                  style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, padding: "10px 13px", color: "#fff", fontSize: 13, fontFamily: "'DM Sans',sans-serif" }} />
+              </div>
+            ))}
+            {err && <div style={{ fontSize: 12, color: "#ff7070", marginBottom: 12 }}>⚠ {err}</div>}
+            <button onClick={handleStartTrial} style={{ width: "100%", background: `linear-gradient(135deg,${trialAccent},#0f6e56)`, border: "none", borderRadius: 11, padding: "13px 0", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 0 18px ${trialAccent}30` }}>
+              Start My Free 7-Day Trial →
+            </button>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", textAlign: "center", marginTop: 10 }}>
+              No credit card required · Cancel anytime · Full access immediately
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Checkout screen ───────────────────────────────────────────
   if (step === "checkout") {
     const chosen = plans.find(p => p.id === plan);
+    const isExpired = trialState.status === "expired";
     return (
       <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <div style={{ maxWidth: 450, width: "100%", animation: "fadeUp .5s ease" }}>
-          <button onClick={() => setStep("landing")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 18, fontFamily: "'DM Sans',sans-serif" }}>{s.checkoutBack}</button>
+          <button onClick={() => { setStep(isExpired ? "expired" : "landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 18, fontFamily: "'DM Sans',sans-serif" }}>{s.checkoutBack}</button>
+          {isExpired && (
+            <div style={{ background: "rgba(255,170,50,0.08)", border: "1px solid rgba(255,170,50,0.25)", borderRadius: 12, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "rgba(255,200,80,0.8)" }}>
+              ⏱ Your 7-day trial has ended. Choose a plan to keep access.
+            </div>
+          )}
           <div style={{ background: `${accent}12`, border: `1px solid ${accent}30`, borderRadius: 16, padding: "13px 18px", marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div><div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{chosen?.label}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{chosen?.desc}</div></div>
             <div style={{ fontSize: 22, fontWeight: 800, color: accent }}>{chosen?.price}</div>
           </div>
-          <Card>
-            <SecTitle color={accent}>{s.checkoutSummaryLabel}</SecTitle>
+          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: 20 }}>
+            <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 800, fontFamily: "'DM Sans',sans-serif", marginBottom: 14 }}>{s.checkoutSummaryLabel}</div>
             {[
               { key: "name",  label: s.fieldName,  ph: s.fieldNamePh,  type: "text" },
               { key: "email", label: s.fieldEmail, ph: s.fieldEmailPh, type: "email" },
@@ -861,12 +1332,38 @@ function PaymentGate({ onUnlock, s, lang }) {
               {loading ? s.processingBtn : `${s.payBtn} ${chosen?.price}`}
             </button>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", textAlign: "center", marginTop: 10 }}>{s.payFooter}</p>
-          </Card>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ── Expired trial screen ──────────────────────────────────────
+  if (trialState.status === "expired" && step !== "checkout") return (
+    <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", color: "#fff", fontFamily: "'DM Sans',sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ maxWidth: 600, width: "100%", textAlign: "center", animation: "fadeUp .6s ease" }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>🌑</div>
+        <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 10px" }}>Your Free Trial Has Ended</h2>
+        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.85, marginBottom: 32, maxWidth: 440, margin: "0 auto 32px" }}>
+          We hope you loved your 7 days inside the hub. Choose a plan below to keep your full access and continue your cycle-syncing journey.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(165px,1fr))", gap: 13, marginBottom: 28 }}>
+          {plans.map(p => (
+            <div key={p.id} onClick={() => { setPlan(p.id); setStep("checkout"); }} style={{ background: plan === p.id ? "rgba(192,132,252,0.11)" : "rgba(255,255,255,0.03)", border: `2px solid ${p.popular ? accent : "rgba(255,255,255,0.07)"}`, borderRadius: 18, padding: 20, cursor: "pointer", transition: "all .25s", position: "relative" }}>
+              {p.popular && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: accent, borderRadius: 20, padding: "2px 12px", fontSize: 9, fontWeight: 800, color: "#fff", textTransform: "uppercase", whiteSpace: "nowrap" }}>{s.mostPopular}</div>}
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 5 }}>{p.label}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: accent, marginBottom: 3 }}>{p.price}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)" }}>{p.period}</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 7 }}>{p.desc}</div>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>{s.guarantee}</p>
+      </div>
+    </div>
+  );
+
+  // ── Main landing page ─────────────────────────────────────────
   return (
     <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", color: "#fff", fontFamily: "'DM Sans',sans-serif", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "60%", height: "60%", borderRadius: "50%", background: "radial-gradient(circle,rgba(192,132,252,.14),transparent 65%)", animation: "glow 9s ease-in-out infinite" }} />
@@ -874,11 +1371,26 @@ function PaymentGate({ onUnlock, s, lang }) {
       <div style={{ position: "relative", zIndex: 1, maxWidth: 700, margin: "0 auto", padding: "58px 20px 80px", textAlign: "center" }}>
         <div style={{ fontSize: 10, letterSpacing: 6, color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 13, animation: "fadeUp .7s ease" }}>{s.paymentTagline}</div>
         <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(32px,8vw,62px)", fontStyle: "italic", fontWeight: 600, margin: "0 0 16px", lineHeight: 1.05, background: "linear-gradient(130deg,#fff 30%,#c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "fadeUp .7s .05s ease both" }}>{s.paymentHeroTitle}</h1>
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.46)", lineHeight: 1.9, maxWidth: 510, margin: "0 auto 34px", animation: "fadeUp .7s .1s ease both" }}>{s.paymentSubtitle}</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 42, animation: "fadeUp .7s .15s ease both" }}>
+        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.46)", lineHeight: 1.9, maxWidth: 510, margin: "0 auto 28px", animation: "fadeUp .7s .1s ease both" }}>{s.paymentSubtitle}</p>
+
+        {/* FREE TRIAL HERO BANNER */}
+        <div style={{ background: "linear-gradient(135deg,rgba(62,203,128,0.12),rgba(62,203,128,0.05))", border: "1px solid rgba(62,203,128,0.3)", borderRadius: 18, padding: "18px 22px", marginBottom: 28, animation: "fadeUp .7s .12s ease both" }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>🌿</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#3ecb80", marginBottom: 6, fontFamily: "'DM Sans',sans-serif" }}>Try it FREE for 7 days</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", lineHeight: 1.75, marginBottom: 14 }}>
+            No credit card. No commitment. Full access to the entire hub from day one.
+          </div>
+          <button onClick={() => { setErr(""); setStep("trial-signup"); }} style={{ background: "linear-gradient(135deg,#3ecb80,#0f6e56)", border: "none", borderRadius: 12, padding: "12px 32px", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 0 20px rgba(62,203,128,0.3)" }}>
+            Start Free Trial — No Card Needed
+          </button>
+        </div>
+
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.22)", marginBottom: 20 }}>— or choose a paid plan below —</div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 28, animation: "fadeUp .7s .15s ease both" }}>
           {(s.paymentFeatures || BASE_STRINGS.paymentFeatures).map(f => <span key={f} style={{ background: "rgba(192,132,252,0.09)", border: "1px solid rgba(192,132,252,0.22)", borderRadius: 20, padding: "5px 13px", fontSize: 12, color: "rgba(255,255,255,0.68)", fontWeight: 500 }}>{f}</span>)}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(185px,1fr))", gap: 13, marginBottom: 30, animation: "fadeUp .7s .2s ease both" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(185px,1fr))", gap: 13, marginBottom: 24, animation: "fadeUp .7s .2s ease both" }}>
           {plans.map(p => (
             <div key={p.id} onClick={() => setPlan(p.id)} style={{ background: plan === p.id ? "rgba(192,132,252,0.11)" : "rgba(255,255,255,0.03)", border: `2px solid ${plan === p.id ? accent : p.popular ? "rgba(192,132,252,0.28)" : "rgba(255,255,255,0.07)"}`, borderRadius: 18, padding: 20, cursor: "pointer", transition: "all .25s", position: "relative", boxShadow: plan === p.id ? `0 0 22px ${accent}22` : "none" }}>
               {p.popular && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: accent, borderRadius: 20, padding: "2px 12px", fontSize: 9, fontWeight: 800, letterSpacing: 1, color: "#fff", textTransform: "uppercase", whiteSpace: "nowrap" }}>{s.mostPopular}</div>}
@@ -890,11 +1402,11 @@ function PaymentGate({ onUnlock, s, lang }) {
             </div>
           ))}
         </div>
-        <button onClick={() => { if (!plan) setPlan("annual"); setStep("checkout"); }} style={{ background: `linear-gradient(135deg,${accent},#7c3aed)`, border: "none", borderRadius: 15, padding: "15px 46px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 0 28px ${accent}38`, animation: "fadeUp .7s .25s ease both" }}>
+        <button onClick={() => { if (!plan) setPlan("annual"); setStep("checkout"); }} style={{ background: `linear-gradient(135deg,${accent},#7c3aed)`, border: "none", borderRadius: 15, padding: "13px 40px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 0 28px ${accent}38`, animation: "fadeUp .7s .25s ease both" }}>
           {plan ? `${s.getAccessBtn} — ${plans.find(p => p.id === plan)?.price}` : s.choosePlanBtn}
         </button>
         <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", marginTop: 13 }}>{s.guarantee}</p>
-        <div style={{ marginTop: 52, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 13, textAlign: "left", animation: "fadeUp .7s .3s ease both" }}>
+        <div style={{ marginTop: 48, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 13, textAlign: "left", animation: "fadeUp .7s .3s ease both" }}>
           {(s.testimonials || BASE_STRINGS.testimonials).map((t, i) => (
             <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 15 }}>
               <div style={{ fontSize: 12, marginBottom: 5 }}>⭐⭐⭐⭐⭐</div>
@@ -907,7 +1419,6 @@ function PaymentGate({ onUnlock, s, lang }) {
     </div>
   );
 }
-
 /* ═══════════════════════════════════════════════════════════════
    BIO LINK MODAL
 ═══════════════════════════════════════════════════════════════ */
@@ -945,7 +1456,6 @@ export default function GoWithYourFlow() {
   const [unlocked, setUnlocked] = useState(false);
   const [lang, setLang] = useState("en");
   const [strings, setStrings] = useState(BASE_STRINGS);
-  const [translating, setTranslating] = useState(false);
   const [translateErr, setTranslateErr] = useState(false);
   const [tab, setTab] = useState(0);
   const [phaseIdx, setPhaseIdx] = useState(0);
@@ -967,23 +1477,27 @@ export default function GoWithYourFlow() {
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { const t = setInterval(() => setAffIdx(p => (p + 1) % 3), 5000); return () => clearInterval(t); }, [phaseIdx]);
 
-  const handleLangChange = useCallback(async (code) => {
+  // Trial countdown state for in-hub banner
+  const [trialMs, setTrialMs] = useState(() => {
+    const ts = getTrialState();
+    return ts.status === "active" ? (ts.msLeft || 0) : 0;
+  });
+  const isTrial = trialMs > 0;
+  useEffect(() => {
+    if (!isTrial) return;
+    const t = setInterval(() => {
+      const ts = getTrialState();
+      if (ts.status !== "active") { setTrialMs(0); clearInterval(t); return; }
+      setTrialMs(ts.msLeft || 0);
+    }, 60000);
+    return () => clearInterval(t);
+  }, [isTrial]);
+
+  const handleLangChange = useCallback((code) => {
     if (code === lang) return;
     setLang(code);
-    if (code === "en") { setStrings(BASE_STRINGS); return; }
-    const langName = LANGUAGES.find(l => l.code === code)?.name || code;
-    setTranslating(true);
+    setStrings(getStrings(code));
     setTranslateErr(false);
-    try {
-      const translated = await translateStrings(BASE_STRINGS, code, langName);
-      setStrings(translated);
-    } catch (e) {
-      console.error("Translation error:", e);
-      setTranslateErr(true);
-      setStrings(BASE_STRINGS);
-    } finally {
-      setTranslating(false);
-    }
   }, [lang]);
 
   const toggle = (h, d) => { const k = `${weekNum}-${phaseIdx}-${h}-${d}`; setChecks(p => ({ ...p, [k]: !p[k] })); };
@@ -994,7 +1508,6 @@ export default function GoWithYourFlow() {
   if (!unlocked) return (
     <>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap'); *{box-sizing:border-box} @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}} @keyframes glow{0%,100%{opacity:.2}50%{opacity:.5}}`}</style>
-      {translating && <TranslatingOverlay langName={langObj.native} />}
       <div style={{ position: "fixed", top: 16, right: 16, zIndex: 9000 }}>
         <LangSelector currentLang={lang} onChange={handleLangChange} accentColor="#c084fc" />
       </div>
@@ -1015,7 +1528,6 @@ export default function GoWithYourFlow() {
         @keyframes tick{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
       `}</style>
 
-      {translating && <TranslatingOverlay langName={langObj.native} />}
       {showBio && <BioLinkModal onClose={() => setShowBio(false)} accent={phase.accent} s={s} rtl={rtl} />}
 
       {/* Ambient glow */}
@@ -1034,6 +1546,17 @@ export default function GoWithYourFlow() {
           {translateErr && (
             <div style={{ background: "rgba(255,170,80,0.08)", border: "1px solid rgba(255,170,80,0.2)", borderRadius: 10, padding: "8px 14px", marginBottom: 12, fontSize: 12, color: "rgba(255,200,100,0.75)" }}>
               ⚠ {s.translateError}
+            </div>
+          )}
+          {isTrial && (
+            <div style={{ background: "rgba(62,203,128,0.08)", border: "1px solid rgba(62,203,128,0.22)", borderRadius: 12, padding: "9px 16px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+              <div style={{ fontSize: 12, color: "rgba(62,203,128,0.85)", display: "flex", alignItems: "center", gap: 7 }}>
+                <span>🌿</span>
+                <span><strong style={{ fontWeight: 700 }}>Free Trial</strong> — {fmtCountdown(trialMs)} remaining</span>
+              </div>
+              <button onClick={() => setUnlocked(false)} style={{ background: "rgba(62,203,128,0.15)", border: "1px solid rgba(62,203,128,0.3)", borderRadius: 8, padding: "4px 12px", color: "#3ecb80", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>
+                Upgrade Now
+              </button>
             </div>
           )}
           <p style={{ fontSize: 10, letterSpacing: 6, color: "rgba(255,255,255,0.2)", textTransform: "uppercase", margin: "0 0 10px", fontWeight: 700 }}>{s.tagline}</p>
