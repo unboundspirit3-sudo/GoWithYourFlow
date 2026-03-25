@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import GoWithYourFlow from './GoWithYourFlow.jsx'
+import App from './GoWithYourFlow.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <GoWithYourFlow />
+    <App />
   </React.StrictMode>
 )
