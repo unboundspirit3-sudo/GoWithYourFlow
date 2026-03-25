@@ -45,6 +45,46 @@ const LANGUAGES = [
 ═══════════════════════════════════════════════════════════════ */
 const BASE_STRINGS = {
   // Navigation
+   // --- 7-DAY TRIAL LOGIC ---
+  const [isTrialExpired, setIsTrialExpired] = useState(false);
+
+  useEffect(() => {
+    // 1. Check if they just returned from a successful Stripe payment
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      localStorage.setItem('gwf_paid', 'true');
+      setHasAccess(true);
+      window.history.replaceState({}, document.title, "/"); // Clean URL
+    }
+
+    // 2. Manage Trial Timing
+    const paid = localStorage.getItem('gwf_paid') === 'true';
+    if (paid) {
+      setHasAccess(true);
+      return;
+    }
+
+    let installDate = localStorage.getItem('gwf_install_date');
+    if (!installDate) {
+      installDate = new Date().toISOString();
+      localStorage.setItem('gwf_install_date', installDate);
+    }
+
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+    const expired = (new Date() - new Date(installDate)) > sevenDaysInMs;
+    
+    if (expired) {
+      setIsTrialExpired(true);
+      setHasAccess(false);
+    }
+  }, []);
+
+  // Update handlePay to point to your real Stripe link
+  const handlePay = () => {
+    // REPLACE THIS URL with your Stripe Payment Link (configured with 7-day trial)
+    const STRIPE_LINK = "https://buy.stripe.com/your_actual_link_here";
+    window.location.href = STRIPE_LINK;
+  };
   tagline: "8-Week Wellness Hub",
   heroTitle: "Your Cycle, Your Strength",
   tabs: ["Welcome", "Phases", "Conditions", "Rest & Recovery", "Tracker", "Journal", "Conclusion"],
