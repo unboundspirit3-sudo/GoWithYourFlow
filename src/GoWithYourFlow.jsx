@@ -46,7 +46,7 @@ const LANGUAGES = [
 const BASE_STRINGS = {
   // Navigation
    // --- 7-DAY TRIAL LOGIC ---
-  const {isTrialExpired, setIsTrialExpired} = useState(false);
+  const :isTrialExpired, setIsTrialExpired} = useState(false);
 
   useEffect(() => {
     // 1. Check if they just returned from a successful Stripe payment
