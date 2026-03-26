@@ -85,10 +85,10 @@ const BASE_STRINGS = {
     const STRIPE_LINK = "https://buy.stripe.com/your_actual_link_here";
     window.location.href = STRIPE_LINK;
   };
-  tagline: "8-Week Wellness Hub",
-  heroTitle: "Your Cycle, Your Strength",
-  tabs: ["Welcome", "Phases", "Conditions", "Rest & Recovery", "Tracker", "Journal", "Conclusion"],
-  getBioLink: "🔗 Get Your Bio Link",
+  tagline; "8-Week Wellness Hub",
+  heroTitle; "Your Cycle, Your Strength",
+  tabs; ["Welcome", "Phases", "Conditions", "Rest & Recovery", "Tracker", "Journal", "Conclusion"],
+  getBioLink; "🔗 Get Your Bio Link",
 
   // Welcome tab
   welcomeQuote: "Do you ever feel like your body speaks in whispers you can't quite understand? Some days, you wake up feeling unstoppable — strong, radiant, perfectly in sync with yourself. Other days, you might feel out of tune with your own skin, like you're moving through fog. What if I told you this isn't a sign that something's wrong? That these ebbs and flows aren't flaws, but sacred rhythms waiting to be embraced?",
