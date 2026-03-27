@@ -78,7 +78,12 @@ const BASE_STRINGS = {
       setHasAccess(false);
     }
   }, []);
-
+{isTrialExpired && (
+     <div className="trial-expired">
+       <p>Your 7-day free trial has expired. Please add a payment method to continue using the service.</p>
+       <button onClick={handleSubscribe}>Subscribe Now</button>
+     </div>
+   )}
   // Update handlePay to point to your real Stripe link
   const handlePay = () => {
     // REPLACE THIS URL with your Stripe Payment Link (configured with 7-day trial)
