@@ -45,154 +45,109 @@ const LANGUAGES = [
 ═══════════════════════════════════════════════════════════════ */
 const BASE_STRINGS = {
   // Navigation
-   // --- 7-DAY TRIAL LOGIC ---
-  const { isTrialExpired, setIsTrialExpired } = useState(false);
-
-  useEffect(() => {
-    // 1. Check if they just returned from a successful Stripe payment
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === 'true') {
-      localStorage.setItem('gwf_paid', 'true');
-      setHasAccess(true);
-      window.history.replaceState({}, document.title, "/"); // Clean URL
-    }
-
-    // 2. Manage Trial Timing
-    const paid = localStorage.getItem('gwf_paid') === 'true';
-    if (paid) {
-      setHasAccess(true);
-      return;
-    }
-
-    let installDate = localStorage.getItem('gwf_install_date');
-    if (!installDate) {
-      installDate = new Date().toISOString();
-      localStorage.setItem('gwf_install_date', installDate);
-    }
-
-    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
-    const expired = (new Date() - new Date(installDate)) > sevenDaysInMs;
-    
-    if (expired) {
-      setIsTrialExpired(true);
-      setHasAccess(false);
-    }
-  }, []);
-{isTrialExpired && (
-     <div className="trial-expired">
-       <p>Your 7-day free trial has expired. Please add a payment method to continue using the service.</p>
-       <button onClick={handleSubscribe}>Subscribe Now</button>
-     </div>
-   )}
-  // Update handlePay to point to your real Stripe link
-  const handlePay = () => {
-    // REPLACE THIS URL with your Stripe Payment Link (configured with 7-day trial)
-    const STRIPE_LINK = "https://buy.stripe.com/your_actual_link_here";
-    window.location.href = STRIPE_LINK;
-  };
-  tagline; "8-Week Wellness Hub",
-  heroTitle; "Your Cycle, Your Strength",
-  tabs; ["Welcome", "Phases", "Conditions", "Rest & Recovery", "Tracker", "Journal", "Conclusion"],
-  getBioLink; "🔗 Get Your Bio Link",
+  tagline: "8-Week Wellness Hub",
+  heroTitle: "Your Cycle, Your Strength",
+  tabs: ["Welcome", "Phases", "Conditions", "Rest & Recovery", "Tracker", "Journal", "Conclusion"],
+  getBioLink: "🔗 Get Your Bio Link",
 
   // Welcome tab
-  welcomeQuote; "Do you ever feel like your body speaks in whispers you can't quite understand? Some days, you wake up feeling unstoppable — strong, radiant, perfectly in sync with yourself. Other days, you might feel out of tune with your own skin, like you're moving through fog. What if I told you this isn't a sign that something's wrong? That these ebbs and flows aren't flaws, but sacred rhythms waiting to be embraced?",
-  feature1Title; "Turn fatigue into intentional rest",
-  feature1Desc; "Learn when your body needs recovery and embrace it without guilt.",
-  feature2Title; "Harness your natural energy when it surges",
-  feature2Desc; "Time your workouts and ambitions to your cycle's natural peaks.",
-  feature3Title; "Satisfy cravings that truly nourish you",
-  feature3Desc; "Phase-specific foods that taste good and serve your hormones.",
-  feature4Title; "Meet every phase with kindness",
-  feature4Desc; "Replace frustration with understanding and radical self-compassion.",
-  alignmentTitle; "The Power of Alignment",
-  alignmentBody1; "The intention behind every part of this process is alignment of mind, body, and soul. Menstrual health is a vital aspect of this alignment, yet it's often overlooked. By integrating menstrual health into your lifestyle, you can maximize the incredible benefits of your body's natural rhythms.",
-  alignmentBody2; "Our menstrual cycles are deeply connected to the natural world — just like the moon's phases and the changing seasons. Over the next 8 weeks, commit to yourself — to take control of your health and well-being, whatever that means to you.",
-  foundationsTitle; "Foundations for Success",
-  principle1Title; "ENJOY the Process",
-  principle1Desc; "This is about progress, not perfection. Celebrate small wins and embrace the journey.",
-  principle2Title; "Track Your Habits and Progress",
-  principle2Desc; "Keeping a journal or using an app can help you stay accountable and recognize patterns.",
-  principle3Title; "Implement Change with LOVE",
-  principle3Desc; "Be kind to yourself. Change takes time, and self-compassion is essential.",
-  principle4Title; "Set Daily Intentions",
-  principle4Desc; "Every morning, take a moment to set your intention for the day. This practice helps build momentum.",
-  proTipLabel; "✦ Pro Tip:",
-  proTipText; "Your brain is in its most suggestible state (theta waves) just before bed and upon waking. Use these moments to visualize how you want your day to unfold.",
-  dailyPracticesTitle; "Daily Practices for Mind-Body Alignment",
-  practiceVizName; "Visualization",
-  practiceVizDesc; "Spend a few moments each day visualizing your goals and how you want to feel. Picture yourself strong, energized, and aligned with your intentions.",
-  practiceAffName; "Affirmations",
-  practiceAffDesc; "Use positive affirmations: \"I am strong,\" \"I am capable,\" \"I honor my body and its needs.\" Repeat during your morning routine or whenever you need a boost.",
-  practiceThanksName; "Thanking Your Body",
-  practiceThanksDesc; "Take a moment each day to express gratitude for your body — for its strength, resilience, and ability to carry you through life.",
-  practiceBreathName; "Breathwork",
-  practiceBreathDesc; "Deep belly breathing or alternate nostril breathing can help you feel grounded and centered. Practice daily for stress reduction and focus.",
+  welcomeQuote: "Do you ever feel like your body speaks in whispers you can't quite understand? Some days, you wake up feeling unstoppable — strong, radiant, perfectly in sync with yourself. Other days, you might feel out of tune with your own skin, like you're moving through fog. What if I told you this isn't a sign that something's wrong? That these ebbs and flows aren't flaws, but sacred rhythms waiting to be embraced?",
+  feature1Title: "Turn fatigue into intentional rest",
+  feature1Desc: "Learn when your body needs recovery and embrace it without guilt.",
+  feature2Title: "Harness your natural energy when it surges",
+  feature2Desc: "Time your workouts and ambitions to your cycle's natural peaks.",
+  feature3Title: "Satisfy cravings that truly nourish you",
+  feature3Desc: "Phase-specific foods that taste good and serve your hormones.",
+  feature4Title: "Meet every phase with kindness",
+  feature4Desc: "Replace frustration with understanding and radical self-compassion.",
+  alignmentTitle: "The Power of Alignment",
+  alignmentBody1: "The intention behind every part of this process is alignment of mind, body, and soul. Menstrual health is a vital aspect of this alignment, yet it's often overlooked. By integrating menstrual health into your lifestyle, you can maximize the incredible benefits of your body's natural rhythms.",
+  alignmentBody2: "Our menstrual cycles are deeply connected to the natural world — just like the moon's phases and the changing seasons. Over the next 8 weeks, commit to yourself — to take control of your health and well-being, whatever that means to you.",
+  foundationsTitle: "Foundations for Success",
+  principle1Title: "ENJOY the Process",
+  principle1Desc: "This is about progress, not perfection. Celebrate small wins and embrace the journey.",
+  principle2Title: "Track Your Habits and Progress",
+  principle2Desc: "Keeping a journal or using an app can help you stay accountable and recognize patterns.",
+  principle3Title: "Implement Change with LOVE",
+  principle3Desc: "Be kind to yourself. Change takes time, and self-compassion is essential.",
+  principle4Title: "Set Daily Intentions",
+  principle4Desc: "Every morning, take a moment to set your intention for the day. This practice helps build momentum.",
+  proTipLabel: "✦ Pro Tip:",
+  proTipText: "Your brain is in its most suggestible state (theta waves) just before bed and upon waking. Use these moments to visualize how you want your day to unfold.",
+  dailyPracticesTitle: "Daily Practices for Mind-Body Alignment",
+  practiceVizName: "Visualization",
+  practiceVizDesc: "Spend a few moments each day visualizing your goals and how you want to feel. Picture yourself strong, energized, and aligned with your intentions.",
+  practiceAffName: "Affirmations",
+  practiceAffDesc: "Use positive affirmations: \"I am strong,\" \"I am capable,\" \"I honor my body and its needs.\" Repeat during your morning routine or whenever you need a boost.",
+  practiceThanksName: "Thanking Your Body",
+  practiceThanksDesc: "Take a moment each day to express gratitude for your body — for its strength, resilience, and ability to carry you through life.",
+  practiceBreathName: "Breathwork",
+  practiceBreathDesc: "Deep belly breathing or alternate nostril breathing can help you feel grounded and centered. Practice daily for stress reduction and focus.",
 
   // Phase tab
-  phaseSectionTitle; "Select Your Phase",
-  phaseSubTabs; ["Workouts", "Smoothies", "Shakes", "Juices", "Meals", "Teas"],
-  workoutPlanTitle; "Weekly Workout Plan",
-  smoothiesTitle; "Smoothies",
-  shakesTitle; "Shakes",
-  juicesTitle; "Juices",
-  mealsTitle; "Sample Daily Meals",
-  teasTitle; "Teas",
-  ingredientsLabel; "Ingredients:",
-  benefitLabel; "Benefit:",
-  whenLabel; "When:",
-  restLabel; "REST",
-  dayLabels; ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  mealLabels; ["Breakfast", "Lunch", "Dinner", "Snack"],
-  affirmationLabel; "Affirmation",
+  phaseSectionTitle: "Select Your Phase",
+  phaseSubTabs: ["Workouts", "Smoothies", "Shakes", "Juices", "Meals", "Teas"],
+  workoutPlanTitle: "Weekly Workout Plan",
+  smoothiesTitle: "Smoothies",
+  shakesTitle: "Shakes",
+  juicesTitle: "Juices",
+  mealsTitle: "Sample Daily Meals",
+  teasTitle: "Teas",
+  ingredientsLabel: "Ingredients:",
+  benefitLabel: "Benefit:",
+  whenLabel: "When:",
+  restLabel: "REST",
+  dayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  mealLabels: ["Breakfast", "Lunch", "Dinner", "Snack"],
+  affirmationLabel: "Affirmation",
 
   // Conditions tab
-  conditionsTitle; "Condition-Specific Guides",
-  conditionsList; ["PCOS", "Endometriosis", "High Blood Pressure"],
-  pcosTitle; "PCOS",
-  pcosBody; "PCOS often involves insulin resistance, hormonal imbalances, and weight management challenges. The focus is on low-glycemic foods, anti-inflammatory meals, and balanced workouts.",
-  endoTitle; "Endometriosis",
-  endoBody; "Endometriosis involves inflammation and pain. The focus is on anti-inflammatory foods, low-impact workouts, and stress management.",
-  hbpTitle; "High Blood Pressure",
-  hbpBody; "Focus on low-sodium foods, heart-healthy fats, and moderate-intensity workouts.",
-  teaGuideLabel; "Tea Guide",
-  keyTakeawaysTitle; "Key Takeaways",
-  avoidTitle; "Avoid",
-  herbsAvoidTitle; "Herbs to Avoid with Hypertension",
-  precautionsTitle; "Key Precautions",
-  lifestyleTitle; "Lifestyle Synergy",
-  morningTeasTitle; "☀️ Morning Teas",
-  morningTeasDesc; "Focus: Gentle energy, circulation support, and daytime blood pressure regulation.",
-  daytimeTeasTitle; "🌤️ Daytime Teas",
-  daytimeTeasDesc; "Focus: Stress reduction and vascular health.",
-  eveningTeasTitle; "🌙 Evening / Calming Teas",
-  eveningTeasDesc; "Focus: Lower stress hormones and promote restful sleep.",
-  additionalSupportTitle; "💧 Additional Support — Fluid Balance & Potassium",
-  hbpDisclaimer; "With all these recommendations please consult with your doctor if you are on any blood pressure medication or if you have any allergies. In which case we can explore alternative options.",
+  conditionsTitle: "Condition-Specific Guides",
+  conditionsList: ["PCOS", "Endometriosis", "High Blood Pressure"],
+  pcosTitle: "PCOS",
+  pcosBody: "PCOS often involves insulin resistance, hormonal imbalances, and weight management challenges. The focus is on low-glycemic foods, anti-inflammatory meals, and balanced workouts.",
+  endoTitle: "Endometriosis",
+  endoBody: "Endometriosis involves inflammation and pain. The focus is on anti-inflammatory foods, low-impact workouts, and stress management.",
+  hbpTitle: "High Blood Pressure",
+  hbpBody: "Focus on low-sodium foods, heart-healthy fats, and moderate-intensity workouts.",
+  teaGuideLabel: "Tea Guide",
+  keyTakeawaysTitle: "Key Takeaways",
+  avoidTitle: "Avoid",
+  herbsAvoidTitle: "Herbs to Avoid with Hypertension",
+  precautionsTitle: "Key Precautions",
+  lifestyleTitle: "Lifestyle Synergy",
+  morningTeasTitle: "☀️ Morning Teas",
+  morningTeasDesc: "Focus: Gentle energy, circulation support, and daytime blood pressure regulation.",
+  daytimeTeasTitle: "🌤️ Daytime Teas",
+  daytimeTeasDesc: "Focus: Stress reduction and vascular health.",
+  eveningTeasTitle: "🌙 Evening / Calming Teas",
+  eveningTeasDesc: "Focus: Lower stress hormones and promote restful sleep.",
+  additionalSupportTitle: "💧 Additional Support — Fluid Balance & Potassium",
+  hbpDisclaimer: "With all these recommendations please consult with your doctor if you are on any blood pressure medication or if you have any allergies. In which case we can explore alternative options.",
 
   // Rest & Recovery tab
-  restTitle; "Rest & Recovery Guide",
-  restBody; "Rest and recovery are just as important as workouts and nutrition. They allow your body to repair, rebuild, and strengthen itself. Without proper recovery, you risk burnout, injury, and hindered progress.",
-  whyRestTitle; "Why Rest & Recovery Matter",
-  restReason1Title; "Muscle Repair",
-  restReason1Desc; "After exercise, your muscles need time to repair and grow stronger.",
-  restReason2Title; "Hormonal Balance",
-  restReason2Desc; "Rest helps regulate stress hormones like cortisol, which can impact your menstrual cycle.",
-  restReason3Title; "Mental Clarity",
-  restReason3Desc; "Recovery gives your mind a break, reducing stress and improving focus.",
-  restReason4Title; "Injury Prevention",
-  restReason4Desc; "Overtraining can lead to injuries, while rest helps keep your body resilient.",
-  signsTitle; "Signs You Need More Rest",
-  signs; ["Persistent fatigue or low energy", "Sore muscles that don't improve", "Difficulty sleeping or poor sleep quality", "Irritability or mood swings", "Decreased performance during workouts", "Irregular menstrual cycles or worsened PMS symptoms"],
-  typesTitle; "Types of Recovery",
-  activeRecoveryName; "Active Recovery",
-  activeRecoveryDesc; "Light activities like walking, yoga, or stretching to promote blood flow and reduce muscle soreness.",
-  passiveRecoveryName; "Passive Recovery",
-  passiveRecoveryDesc; "Complete rest, such as napping, lounging, or taking a day off from physical activity.",
-  mentalRecoveryName; "Mental Recovery",
-  mentalRecoveryDesc; "Practices like meditation, journaling, or spending time in nature to reduce stress and recharge your mind.",
-  tipsTitle; "Tips for Optimizing Recovery",
-  tips; {
+  restTitle: "Rest & Recovery Guide",
+  restBody: "Rest and recovery are just as important as workouts and nutrition. They allow your body to repair, rebuild, and strengthen itself. Without proper recovery, you risk burnout, injury, and hindered progress.",
+  whyRestTitle: "Why Rest & Recovery Matter",
+  restReason1Title: "Muscle Repair",
+  restReason1Desc: "After exercise, your muscles need time to repair and grow stronger.",
+  restReason2Title: "Hormonal Balance",
+  restReason2Desc: "Rest helps regulate stress hormones like cortisol, which can impact your menstrual cycle.",
+  restReason3Title: "Mental Clarity",
+  restReason3Desc: "Recovery gives your mind a break, reducing stress and improving focus.",
+  restReason4Title: "Injury Prevention",
+  restReason4Desc: "Overtraining can lead to injuries, while rest helps keep your body resilient.",
+  signsTitle: "Signs You Need More Rest",
+  signs: ["Persistent fatigue or low energy", "Sore muscles that don't improve", "Difficulty sleeping or poor sleep quality", "Irritability or mood swings", "Decreased performance during workouts", "Irregular menstrual cycles or worsened PMS symptoms"],
+  typesTitle: "Types of Recovery",
+  activeRecoveryName: "Active Recovery",
+  activeRecoveryDesc: "Light activities like walking, yoga, or stretching to promote blood flow and reduce muscle soreness.",
+  passiveRecoveryName: "Passive Recovery",
+  passiveRecoveryDesc: "Complete rest, such as napping, lounging, or taking a day off from physical activity.",
+  mentalRecoveryName: "Mental Recovery",
+  mentalRecoveryDesc: "Practices like meditation, journaling, or spending time in nature to reduce stress and recharge your mind.",
+  tipsTitle: "Tips for Optimizing Recovery",
+  tips: [
     { t: "Prioritize Sleep", d: "Aim for 7–9 hours of quality sleep each night. Create a calming bedtime routine to improve sleep hygiene." },
     { t: "Hydrate", d: "Drink plenty of water throughout the day to support muscle repair and overall health." },
     { t: "Nourish Your Body", d: "Eat nutrient-dense meals with a balance of protein, healthy fats, and carbohydrates to fuel recovery." },
@@ -200,10 +155,10 @@ const BASE_STRINGS = {
     { t: "Use Recovery Tools", d: "Foam rollers, massage guns, or Epsom salt baths can help relieve muscle soreness." },
     { t: "Listen to Your Body", d: "If you feel tired or sore, take a break. Pushing through fatigue can do more harm than good." },
     { t: "Practice Mindfulness", d: "Techniques like meditation, deep breathing, or gratitude journaling can help reduce stress and improve mental recovery." },
-  },
+  ],
   weeklyPlanTitle: "Weekly Recovery Plan (3–4 Days/Week)",
   weeklyPlanDesc: "Use this template to plan your recovery activities. Adjust based on your energy levels and workout schedule.",
-  weeklyPlanItems: {
+  weeklyPlanItems: [
     { a: "Active recovery (e.g., light walk or yoga)", n: "Focus on gentle movement and relaxation." },
     { a: "Passive recovery (e.g., nap or lounge)", n: "Let your body fully recharge." },
     { a: "Foam rolling or self-massage", n: "Target sore muscles." },
@@ -681,7 +636,7 @@ const TRANSLATIONS = {
     proTipText: "Tu cerebro está en su estado más sugestivo justo antes de dormir y al despertar. Usa estos momentos para visualizar cómo quieres que se desarrolle tu día.",
     dailyPracticesTitle: "Prácticas Diarias para la Alineación Cuerpo-Mente",
     practiceVizName: "Visualización", practiceVizDesc: "Dedica unos momentos cada día a visualizar tus objetivos y cómo quieres sentirte.",
-    practiceAffName: "Afirmaciones", practiceAffDesc: "Usa afirmaciones positivas: "Soy fuerte", "Soy capaz", "Honro mi cuerpo y sus necesidades."",
+    practiceAffName: "Afirmaciones", practiceAffDesc: "Usa afirmaciones positivas: \"Soy fuerte\", \"Soy capaz\", \"Honro mi cuerpo y sus necesidades.\"",
     practiceThanksName: "Agradecer a Tu Cuerpo", practiceThanksDesc: "Tómate un momento cada día para expresar gratitud por tu cuerpo — por su fuerza y resiliencia.",
     practiceBreathName: "Respiración", practiceBreathDesc: "La respiración abdominal profunda puede ayudarte a sentirte centrada y conectada a tierra.",
     phaseSubTabs: ["Entrenamientos", "Batidos", "Shakes", "Jugos", "Comidas", "Tés"],
@@ -743,7 +698,7 @@ const TRANSLATIONS = {
     proTipLabel: "✦ Dica Pro:", proTipText: "Seu cérebro está no estado mais sugestivo logo antes de dormir e ao acordar.",
     dailyPracticesTitle: "Práticas Diárias para Alinhamento Corpo-Mente",
     practiceVizName: "Visualização", practiceVizDesc: "Passe alguns momentos cada dia visualizando seus objetivos.",
-    practiceAffName: "Afirmações", practiceAffDesc: "Use afirmações positivas: "Sou forte", "Sou capaz", "Honro meu corpo e suas necessidades."",
+    practiceAffName: "Afirmações", practiceAffDesc: "Use afirmações positivas: \"Sou forte\", \"Sou capaz\", \"Honro meu corpo e suas necessidades.\"",
     practiceThanksName: "Agradecendo ao Seu Corpo", practiceThanksDesc: "Reserve um momento cada dia para expressar gratidão pelo seu corpo.",
     practiceBreathName: "Respiração", practiceBreathDesc: "A respiração abdominal profunda pode ajudá-la a se sentir centrada.",
     phaseSubTabs: ["Treinos", "Smoothies", "Shakes", "Sucos", "Refeições", "Chás"],
@@ -865,7 +820,7 @@ const TRANSLATIONS = {
     proTipLabel: "✦ प्रो टिप:", proTipText: "आपका मस्तिष्क सोने से ठीक पहले और जागने पर सबसे अधिक सुझाव स्वीकार करने की अवस्था में होता है।",
     dailyPracticesTitle: "मन-शरीर संरेखण के लिए दैनिक अभ्यास",
     practiceVizName: "विज़ुअलाइज़ेशन", practiceVizDesc: "हर दिन कुछ पल अपने लक्ष्यों की कल्पना करने में बिताएं।",
-    practiceAffName: "सकारात्मक पुष्टि", practiceAffDesc: "सकारात्मक पुष्टि का उपयोग करें: "मैं मजबूत हूं", "मैं सक्षम हूं"।",
+    practiceAffName: "सकारात्मक पुष्टि", practiceAffDesc: "सकारात्मक पुष्टि का उपयोग करें: \"मैं मजबूत हूं\", \"मैं सक्षम हूं\"।",
     practiceThanksName: "अपने शरीर का धन्यवाद", practiceThanksDesc: "हर दिन अपने शरीर के प्रति कृतज्ञता व्यक्त करने के लिए एक पल लें।",
     practiceBreathName: "श्वास कार्य", practiceBreathDesc: "गहरी पेट की सांस लेने से आपको केंद्रित महसूस करने में मदद मिल सकती है।",
     phaseSubTabs: ["व्यायाम", "स्मूदी", "शेक", "जूस", "भोजन", "चाय"],
@@ -926,7 +881,7 @@ const TRANSLATIONS = {
     proTipLabel: "✦ Kidokezo cha Pro:", proTipText: "Ubongo wako uko katika hali yake ya kupendekeza zaidi kabla ya kulala na unapoamka.",
     dailyPracticesTitle: "Mazoea ya Kila Siku ya Usawazishaji wa Mwili na Akili",
     practiceVizName: "Kutazamia", practiceVizDesc: "Tumia dakika chache kila siku kutazamia malengo yako.",
-    practiceAffName: "Uthibitisho", practiceAffDesc: "Tumia uthibitisho mzuri: "Mimi ni mwenye nguvu", "Mimi ni mwenye uwezo".",
+    practiceAffName: "Uthibitisho", practiceAffDesc: "Tumia uthibitisho mzuri: \"Mimi ni mwenye nguvu\", \"Mimi ni mwenye uwezo\".",
     practiceThanksName: "Kushukuru Mwili Wako", practiceThanksDesc: "Chukua muda kila siku kushukuru mwili wako — kwa nguvu na ustahimilivu wake.",
     practiceBreathName: "Kazi ya Pumzi", practiceBreathDesc: "Kupumua kwa kina kunaweza kukusaidia kuhisi umejikita.",
     phaseSubTabs: ["Mazoezi", "Smoothies", "Shakes", "Juisi", "Milo", "Chai"],
@@ -987,7 +942,7 @@ const TRANSLATIONS = {
     proTipLabel: "✦ Ìmọ̀ Ọgbọ́n:", proTipText: "Ọpọlọ rẹ wà ní ipo tí ó ṣe ìmọlẹ̀ jù lọ ṣáájú orun àti lẹ́yìn ji.",
     dailyPracticesTitle: "Àwọn Ìṣe Ojoojúmọ́ fún Ìdọgba Ara-Ọkàn",
     practiceVizName: "Ìran", practiceVizDesc: "Lo ìṣẹ́jú díẹ̀ ní gbogbo ọjọ́ láti rí àwọn ète rẹ.",
-    practiceAffName: "Ìjẹrìísí", practiceAffDesc: "Lo àwọn ìjẹrìísí rere: "Mo lágbára", "Mo ní agbára".",
+    practiceAffName: "Ìjẹrìísí", practiceAffDesc: "Lo àwọn ìjẹrìísí rere: \"Mo lágbára\", \"Mo ní agbára\".",
     practiceThanksName: "Dúpẹ́ lọ́wọ́ Ara Rẹ", practiceThanksDesc: "Gba ìṣẹ́jú ní gbogbo ọjọ́ láti ṣàfihàn ẹ̀wẹ̀ fún ara rẹ.",
     practiceBreathName: "Iṣẹ́ Ẹ̀mí", practiceBreathDesc: "Mímu ẹ̀mí jinjin le ràn ọ lọ́wọ́ láti nímọ̀ pé o wà ní ipò.",
     phaseSubTabs: ["Àdáṣe", "Smoothies", "Shakes", "Àwọn Oje", "Oúnjẹ", "Tí"],
@@ -1056,21 +1011,21 @@ function LangSelector({ currentLang, onChange, accentColor }) {
     <div ref={ref} style={{ position: "relative", userSelect: "none" }}>
       <button
         onClick={() => setOpen(o => !o)}
-        style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.06)", border: `1px solid ${open ? accentColor : "rgba(255,255,255,0.12)"}`, borderRadius: 10, padding: "6px 12px", cursor: "pointer", color: "#fff", fontSize: 13, fontFamily: "'DM Sans',sans-serif", transition: "all .2s" }}
+        style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(26,26,26,0.06)", border: `1px solid ${open ? accentColor : "rgba(26,26,26,0.15)"}`, borderRadius: 10, padding: "6px 12px", cursor: "pointer", color: "#1a1a1a", fontSize: 13, fontFamily: "'DM Sans',sans-serif", transition: "all .2s" }}
       >
         <span style={{ fontSize: 16 }}>{lang.flag}</span>
         <span style={{ fontWeight: 600 }}>{lang.native}</span>
-        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginLeft: 2 }}>{open ? "▲" : "▼"}</span>
+        <span style={{ fontSize: 10, color: "rgba(26,26,26,0.4)", marginLeft: 2 }}>{open ? "▲" : "▼"}</span>
       </button>
       {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 260, background: "#141420", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, overflow: "hidden", boxShadow: "0 20px 50px rgba(0,0,0,0.6)", zIndex: 9999, animation: "fadeUp .2s ease" }}>
-          <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+        <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 260, background: "#fafafa", border: "1px solid rgba(26,26,26,0.15)", borderRadius: 14, overflow: "hidden", boxShadow: "0 20px 50px rgba(0,0,0,0.12)", zIndex: 9999, animation: "fadeUp .2s ease" }}>
+          <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(26,26,26,0.08)" }}>
             <input
               autoFocus
               placeholder="Search language…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "6px 10px", color: "#fff", fontSize: 12, fontFamily: "'DM Sans',sans-serif" }}
+              style={{ width: "100%", background: "rgba(26,26,26,0.05)", border: "1px solid rgba(26,26,26,0.12)", borderRadius: 8, padding: "6px 10px", color: "#1a1a1a", fontSize: 12, fontFamily: "'DM Sans',sans-serif" }}
             />
           </div>
           <div style={{ maxHeight: 280, overflowY: "auto" }}>
@@ -1078,12 +1033,12 @@ function LangSelector({ currentLang, onChange, accentColor }) {
               <button
                 key={l.code}
                 onClick={() => { onChange(l.code); setOpen(false); setSearch(""); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", background: l.code === currentLang ? `${accentColor}18` : "transparent", border: "none", cursor: "pointer", color: l.code === currentLang ? accentColor : "rgba(255,255,255,0.72)", textAlign: "left", transition: "background .15s", fontFamily: "'DM Sans',sans-serif" }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", background: l.code === currentLang ? `${accentColor}12` : "transparent", border: "none", cursor: "pointer", color: l.code === currentLang ? accentColor : "rgba(26,26,26,0.75)", textAlign: "left", transition: "background .15s", fontFamily: "'DM Sans',sans-serif" }}
               >
                 <span style={{ fontSize: 18, flexShrink: 0 }}>{l.flag}</span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: l.code === currentLang ? 700 : 400 }}>{l.native}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{l.name}</div>
+                  <div style={{ fontSize: 10, color: "rgba(26,26,26,0.45)" }}>{l.name}</div>
                 </div>
                 {l.code === currentLang && <span style={{ marginLeft: "auto", fontSize: 12 }}>✓</span>}
               </button>
@@ -1126,24 +1081,24 @@ function TranslatingOverlay({ langName }) {
    UI HELPERS
 ═══════════════════════════════════════════════════════════════ */
 function Card({ children, style = {} }) {
-  return <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: 20, ...style }}>{children}</div>;
+  return <div style={{ background: "rgba(26,26,26,0.04)", border: "1px solid rgba(26,26,26,0.1)", borderRadius: 18, padding: 20, ...style }}>{children}</div>;
 }
 function SecTitle({ children, color }) {
-  return <h3 style={{ margin: "0 0 14px", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: color || "rgba(255,255,255,0.4)", fontWeight: 800, fontFamily: "'DM Sans',sans-serif" }}>{children}</h3>;
+  return <h3 style={{ margin: "0 0 14px", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: color || "rgba(26,26,26,0.5)", fontWeight: 800, fontFamily: "'DM Sans',sans-serif" }}>{children}</h3>;
 }
 function Pill({ label, active, onClick, color }) {
-  return <button onClick={onClick} style={{ background: active ? color : "transparent", border: `1px solid ${active ? color : "rgba(255,255,255,0.1)"}`, color: active ? "#fff" : "rgba(255,255,255,0.4)", padding: "5px 14px", borderRadius: 30, cursor: "pointer", fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", fontFamily: "'DM Sans',sans-serif", transition: "all .2s", whiteSpace: "nowrap" }}>{label}</button>;
+  return <button onClick={onClick} style={{ background: active ? color : "transparent", border: `1px solid ${active ? color : "rgba(26,26,26,0.15)"}`, color: active ? "#fff" : "rgba(26,26,26,0.5)", padding: "5px 14px", borderRadius: 30, cursor: "pointer", fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", fontFamily: "'DM Sans',sans-serif", transition: "all .2s", whiteSpace: "nowrap" }}>{label}</button>;
 }
 function Dots({ level, color }) {
-  return <div style={{ display: "flex", gap: 3 }}>{[1,2,3,4].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: 2, background: i <= level ? color : "rgba(255,255,255,0.1)" }} />)}</div>;
+  return <div style={{ display: "flex", gap: 3 }}>{[1,2,3,4].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: 2, background: i <= level ? color : "rgba(26,26,26,0.15)" }} />)}</div>;
 }
 function RecipeGrid({ items, accent }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))", gap: 10 }}>
       {items.map((item, i) => (
-        <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 13, padding: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 7, lineHeight: 1.4 }}>{i + 1}. {item.name}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.7, marginBottom: item.benefit ? 7 : 0 }}>{item.ingredients}</div>
+        <div key={i} style={{ background: "rgba(26,26,26,0.04)", border: "1px solid rgba(26,26,26,0.1)", borderRadius: 13, padding: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", marginBottom: 7, lineHeight: 1.4 }}>{i + 1}. {item.name}</div>
+          <div style={{ fontSize: 11, color: "rgba(26,26,26,0.55)", lineHeight: 1.7, marginBottom: item.benefit ? 7 : 0 }}>{item.ingredients}</div>
           {item.benefit && <div style={{ fontSize: 10, color: accent, fontWeight: 700 }}>✦ {item.benefit}</div>}
         </div>
       ))}
@@ -1257,11 +1212,11 @@ function PaymentGate({ onUnlock, s, lang }) {
   // ── Trial success screen ──────────────────────────────────────
   if (step === "trial-success") {
     return (
-      <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ maxWidth: 460, width: "100%", textAlign: "center", animation: "fadeUp .6s ease" }}>
           <div style={{ fontSize: 58, marginBottom: 16 }}>🌿</div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 10px" }}>Your 7-Day Trial Has Started!</h2>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, lineHeight: 1.85, marginBottom: 12 }}>
+          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#1a1a1a", margin: "0 0 10px" }}>Your 7-Day Trial Has Started!</h2>
+          <p style={{ color: "rgba(26,26,26,0.6)", fontSize: 14, lineHeight: 1.85, marginBottom: 12 }}>
             Welcome, {trialName}! You have full access to the entire hub for the next 7 days — completely free.
           </p>
           <div style={{ background: `${trialAccent}12`, border: `1px solid ${trialAccent}30`, borderRadius: 14, padding: "14px 20px", marginBottom: 26, display: "inline-flex", alignItems: "center", gap: 10 }}>
@@ -1284,11 +1239,11 @@ function PaymentGate({ onUnlock, s, lang }) {
 
   // ── Paid success screen ───────────────────────────────────────
   if (step === "success") return (
-    <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ maxWidth: 440, width: "100%", textAlign: "center", animation: "fadeUp .6s ease" }}>
         <div style={{ fontSize: 60, marginBottom: 18 }}>{s.successEmoji}</div>
-        <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 12px" }}>{s.successTitle}</h2>
-        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, lineHeight: 1.85, marginBottom: 28 }}>{s.successBody}</p>
+        <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#1a1a1a", margin: "0 0 12px" }}>{s.successTitle}</h2>
+        <p style={{ color: "rgba(26,26,26,0.6)", fontSize: 14, lineHeight: 1.85, marginBottom: 28 }}>{s.successBody}</p>
         <button onClick={onUnlock} style={{ background: `linear-gradient(135deg,${accent},#7c3aed)`, border: "none", borderRadius: 14, padding: "14px 38px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 0 28px ${accent}40` }}>{s.successBtn}</button>
       </div>
     </div>
@@ -1296,12 +1251,12 @@ function PaymentGate({ onUnlock, s, lang }) {
 
   // ── Trial sign-up screen ──────────────────────────────────────
   if (step === "trial-signup") return (
-    <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ maxWidth: 440, width: "100%", animation: "fadeUp .5s ease" }}>
-        <button onClick={() => { setStep("landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 20, fontFamily: "'DM Sans',sans-serif" }}>← Back</button>
+        <button onClick={() => { setStep("landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(26,26,26,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 20, fontFamily: "'DM Sans',sans-serif" }}>← Back</button>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🌿</div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 30, fontStyle: "italic", color: "#fff", margin: "0 0 8px" }}>Start Your Free Trial</h2>
+          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 30, fontStyle: "italic", color: "#1a1a1a", margin: "0 0 8px" }}>Start Your Free Trial</h2>
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.75 }}>7 days of full access. No card required. No commitment.</p>
         </div>
         <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: 22 }}>
@@ -1340,9 +1295,9 @@ function PaymentGate({ onUnlock, s, lang }) {
     const chosen = plans.find(p => p.id === plan);
     const isExpired = trialState.status === "expired";
     return (
-      <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <div style={{ maxWidth: 450, width: "100%", animation: "fadeUp .5s ease" }}>
-          <button onClick={() => { setStep(isExpired ? "expired" : "landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 18, fontFamily: "'DM Sans',sans-serif" }}>{s.checkoutBack}</button>
+          <button onClick={() => { setStep(isExpired ? "expired" : "landing"); setErr(""); }} style={{ background: "none", border: "none", color: "rgba(26,26,26,0.4)", cursor: "pointer", fontSize: 13, marginBottom: 18, fontFamily: "'DM Sans',sans-serif" }}>{s.checkoutBack}</button>
           {isExpired && (
             <div style={{ background: "rgba(255,170,50,0.08)", border: "1px solid rgba(255,170,50,0.25)", borderRadius: 12, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "rgba(255,200,80,0.8)" }}>
               ⏱ Your 7-day trial has ended. Choose a plan to keep access.
@@ -1389,11 +1344,11 @@ function PaymentGate({ onUnlock, s, lang }) {
 
   // ── Expired trial screen ──────────────────────────────────────
   if (trialState.status === "expired" && step !== "checkout") return (
-    <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", color: "#fff", fontFamily: "'DM Sans',sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#f5f5f5", color: "#1a1a1a", fontFamily: "'DM Sans',sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ maxWidth: 600, width: "100%", textAlign: "center", animation: "fadeUp .6s ease" }}>
         <div style={{ fontSize: 52, marginBottom: 16 }}>🌑</div>
-        <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#fff", margin: "0 0 10px" }}>Your Free Trial Has Ended</h2>
-        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.85, marginBottom: 32, maxWidth: 440, margin: "0 auto 32px" }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, fontStyle: "italic", color: "#1a1a1a", margin: "0 0 10px" }}>Your Free Trial Has Ended</h2>
+        <p style={{ color: "rgba(26,26,26,0.55)", fontSize: 14, lineHeight: 1.85, marginBottom: 32, maxWidth: 440, margin: "0 auto 32px" }}>
           We hope you loved your 7 days inside the hub. Choose a plan below to keep your full access and continue your cycle-syncing journey.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(165px,1fr))", gap: 13, marginBottom: 28 }}>
@@ -1415,11 +1370,11 @@ function PaymentGate({ onUnlock, s, lang }) {
   // ── Main landing page ─────────────────────────────────────────
   return (
     <div dir={rtl ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#07070e", color: "#fff", fontFamily: "'DM Sans',sans-serif", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "60%", height: "60%", borderRadius: "50%", background: "radial-gradient(circle,rgba(192,132,252,.14),transparent 65%)", animation: "glow 9s ease-in-out infinite" }} />
-      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "55%", height: "55%", borderRadius: "50%", background: "radial-gradient(circle,rgba(59,130,246,.09),transparent 65%)", animation: "glow 11s ease-in-out infinite reverse" }} />
+      <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "60%", height: "60%", borderRadius: "50%", background: "radial-gradient(circle,rgba(192,132,252,.08),transparent 65%)", animation: "glow 9s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "55%", height: "55%", borderRadius: "50%", background: "radial-gradient(circle,rgba(59,130,246,.05),transparent 65%)", animation: "glow 11s ease-in-out infinite reverse" }} />
       <div style={{ position: "relative", zIndex: 1, maxWidth: 700, margin: "0 auto", padding: "58px 20px 80px", textAlign: "center" }}>
-        <div style={{ fontSize: 10, letterSpacing: 6, color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 13, animation: "fadeUp .7s ease" }}>{s.paymentTagline}</div>
-        <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(32px,8vw,62px)", fontStyle: "italic", fontWeight: 600, margin: "0 0 16px", lineHeight: 1.05, background: "linear-gradient(130deg,#fff 30%,#c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "fadeUp .7s .05s ease both" }}>{s.paymentHeroTitle}</h1>
+        <div style={{ fontSize: 10, letterSpacing: 6, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 13, animation: "fadeUp .7s ease" }}>{s.paymentTagline}</div>
+        <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(32px,8vw,62px)", fontStyle: "italic", fontWeight: 600, margin: "0 0 16px", lineHeight: 1.05, background: "linear-gradient(130deg,#c084fc 30%,#60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "fadeUp .7s .05s ease both" }}>{s.paymentHeroTitle}</h1>
         <p style={{ fontSize: 15, color: "rgba(255,255,255,0.46)", lineHeight: 1.9, maxWidth: 510, margin: "0 auto 28px", animation: "fadeUp .7s .1s ease both" }}>{s.paymentSubtitle}</p>
 
         {/* FREE TRIAL HERO BANNER */}
@@ -1476,22 +1431,22 @@ function BioLinkModal({ onClose, accent, s, rtl }) {
   const bioUrl = "https://gowithyourflow.app/hub";
   const copy = () => { try { navigator.clipboard.writeText(bioUrl); } catch(e){} setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9000, padding: 20 }}>
-      <div dir={rtl ? "rtl" : "ltr"} style={{ maxWidth: 500, width: "100%", background: "#0f0f1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 22, padding: 28, position: "relative", animation: "fadeUp .4s ease" }}>
-        <button onClick={onClose} style={{ position: "absolute", top: 14, right: 14, background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 20, cursor: "pointer" }}>✕</button>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9000, padding: 20 }}>
+      <div dir={rtl ? "rtl" : "ltr"} style={{ maxWidth: 500, width: "100%", background: "#fafafa", border: "1px solid rgba(26,26,26,0.12)", borderRadius: 22, padding: 28, position: "relative", animation: "fadeUp .4s ease" }}>
+        <button onClick={onClose} style={{ position: "absolute", top: 14, right: 14, background: "none", border: "none", color: "rgba(26,26,26,0.5)", fontSize: 20, cursor: "pointer" }}>✕</button>
         <div style={{ fontSize: 30, marginBottom: 10, textAlign: "center" }}>🔗</div>
-        <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontStyle: "italic", color: "#fff", textAlign: "center", margin: "0 0 8px" }}>{s.bioTitle}</h3>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", textAlign: "center", margin: "0 0 20px", lineHeight: 1.75 }}>{s.bioDesc}</p>
-        <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 11, padding: "11px 14px", display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-          <div style={{ fontSize: 12, color: "#fff", flex: 1, fontFamily: "monospace", wordBreak: "break-all" }}>{bioUrl}</div>
+        <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontStyle: "italic", color: "#1a1a1a", textAlign: "center", margin: "0 0 8px" }}>{s.bioTitle}</h3>
+        <p style={{ fontSize: 13, color: "rgba(26,26,26,0.55)", textAlign: "center", margin: "0 0 20px", lineHeight: 1.75 }}>{s.bioDesc}</p>
+        <div style={{ background: "rgba(26,26,26,0.04)", border: "1px solid rgba(26,26,26,0.12)", borderRadius: 11, padding: "11px 14px", display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: "#1a1a1a", flex: 1, fontFamily: "monospace", wordBreak: "break-all" }}>{bioUrl}</div>
           <button onClick={copy} style={{ background: accent, border: "none", borderRadius: 7, padding: "6px 13px", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>{copied ? s.bioCopiedBtn : s.bioCopyBtn}</button>
         </div>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", margin: "0 0 10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.bioCaptionsLabel}</p>
+        <p style={{ fontSize: 11, color: "rgba(26,26,26,0.45)", margin: "0 0 10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.bioCaptionsLabel}</p>
         {(s.bioCaptions || BASE_STRINGS.bioCaptions).map((cap, i) => (
-          <div key={i} onClick={() => { try { navigator.clipboard.writeText(cap); } catch(e){} }} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 9, padding: "9px 12px", fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.75, cursor: "pointer", marginBottom: 7 }}>{cap}</div>
+          <div key={i} onClick={() => { try { navigator.clipboard.writeText(cap); } catch(e){} }} style={{ background: "rgba(26,26,26,0.03)", border: "1px solid rgba(26,26,26,0.08)", borderRadius: 9, padding: "9px 12px", fontSize: 12, color: "rgba(26,26,26,0.6)", lineHeight: 1.75, cursor: "pointer", marginBottom: 7 }}>{cap}</div>
         ))}
-        <div style={{ marginTop: 16, background: "rgba(192,132,252,0.07)", border: "1px solid rgba(192,132,252,0.18)", borderRadius: 11, padding: 13 }}>
-          <p style={{ fontSize: 12, color: "rgba(192,132,252,0.75)", margin: 0, lineHeight: 1.75 }}>{s.bioDeployNote}</p>
+        <div style={{ marginTop: 16, background: "rgba(192,132,252,0.08)", border: "1px solid rgba(192,132,252,0.2)", borderRadius: 11, padding: 13 }}>
+          <p style={{ fontSize: 12, color: "rgba(192,132,252,0.85)", margin: 0, lineHeight: 1.75 }}>{s.bioDeployNote}</p>
         </div>
       </div>
     </div>
